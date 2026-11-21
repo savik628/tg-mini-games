@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Мини игры — Платформа</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="tg-theme">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand-title">
+      <span>🎮</span>
+      <span>Мини игры</span>
+    </div>
+    <div id="minutesBadge" class="minutes-badge" onclick="showPaywall()">
+      ⏳ 10.0 мин
+    </div>
+  </header>
+
+  <!-- Main View: Каталог плиток игр (Раздел 2 RULES.md) -->
+  <main id="viewCatalog" class="view-screen">
+    <!-- Фильтры (п. 2.5) -->
+    <div class="filters-bar">
+      <button class="filter-btn active" onclick="filterTiles('all')">Все</button>
+      <button class="filter-btn" onclick="filterTiles('new')">Новые</button>
+      <button class="filter-btn" onclick="filterTiles('plus')">Для подписчиков</button>
+      <button class="filter-btn" onclick="filterTiles('favorites')">Избранное</button>
+    </div>
+
+    <!-- 2-колоночная сетка плиток (п. 2.1) -->
+    <div id="tilesGrid" class="tiles-grid">
+      <!-- Динамические плитки рендерятся из /apps -->
+    </div>
+  </main>
+
+  <!-- Profile View: Профиль пользователя (Раздел 3 RULES.md) -->
+  <main id="viewProfile" class="view-screen" style="display: none;">
+    <div class="profile-box">
+      <!-- User card -->
+      <div class="user-card">
+        <div id="userAvatar" class="user-avatar">?</div>
+        <div>
+          <div id="userName" style="font-weight: 700; font-size: 1.1rem;">Игрок</div>
+          <div id="userStatus" style="font-size: 0.85rem; color: var(--accent);">Free</div>
+        </div>
+      </div>
+
+      <!-- Stats: Минуты и сброс (п. 3.2) -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div id="statRemainingMin" class="stat-val">10.0</div>
+          <div class="stat-lbl">Остаток минут сегодня</div>
+        </div>
+        <div class="stat-card">
+          <div id="statResetTime" class="stat-val">00:00 UTC</div>
+          <div class="stat-lbl">Время сброса лимита</div>
+        </div>
+      </div>
+
+      <!-- Разбивка минут -->
+      <div class="stat-card">
+        <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">Источники минут на сегодня:</div>
+        <div id="minutesBreakdown" style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;">
+          • Free база: 10 мин<br>
+          • Рефералы: 0 мин<br>
+          • Реклама: 0 мин (макс 10)<br>
+          • Пакеты: 0 мин
+        </div>
+        <button class="btn-primary" onclick="watchAdReward()" style="margin-top: 10px; font-size: 0.85rem;">
+          📺 Смотреть рекламу (+5 мин)
+        </button>
+      </div>
+
+      <!-- Реферальная система (Раздел 5) -->
+      <div class="stat-card">
+        <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px;">👥 Приглашай друзей (+15 мин)</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+          Подтверждено друзей: <b id="refVerified" style="color: var(--text-main);">0</b> (лимит: 2/день, 20/мес)
+        </div>
+        <button class="btn-primary" onclick="copyReferralLink()">
+          🔗 Скопировать ссылку приглашения
+        </button>
+      </div>
+
+      <!-- Plus & Офлайн режим (Разделы 6 и 8) -->
+      <div class="stat-card">
+        <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px;">⭐️ Подписка Plus</div>
+        <div id="plusStatusText" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+          Безлимитная игра без рекламы и полный офлайн-доступ.
+        </div>
+        <button class="btn-primary" onclick="showPaywall()">
+          Оформить Plus за Stars
+        </button>
+        <button class="btn-secondary" onclick="checkOfflineMode()" style="margin-top: 8px;">
+          📶 Проверить офлайн-токен
+        </button>
+      </div>
+
+      <!-- Юридический блок документов (п. 3.2) -->
+      <div class="stat-card">
+        <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px;">📄 Документы</div>
+        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem;">
+          <a href="/static/docs/terms.md" target="_blank" style="color: var(--primary);">Пользовательское соглашение</a>
+          <a href="/static/docs/privacy.md" target="_blank" style="color: var(--primary);">Политика конфиденциальности</a>
+          <a href="/static/docs/subscription.md" target="_blank" style="color: var(--primary);">Правила подписки</a>
+        </div>
+      </div>
+
+      <!-- Служебные кнопки -->
+      <button class="btn-secondary" onclick="openSupport()">🎧 Поддержка</button>
+      <button class="btn-secondary" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.3);" onclick="deleteAccount()">
+        🗑 Удалить аккаунт
+      </button>
+    </div>
+  </main>
+
+  <!-- Game Player Screen (Единый роутер) -->
+  <main id="viewGame" class="view-screen" style="display: none; padding: 16px; text-align: center;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <button class="btn-secondary" style="width: auto; padding: 6px 14px;" onclick="exitGame()">← В каталог</button>
+      <div id="gameSessionTimer" style="font-size: 0.9rem; font-weight: 600; color: var(--primary);">Игра активна</div>
+    </div>
+    <div id="gameContainer" style="background: var(--card-bg); border-radius: var(--radius-md); padding: 30px; border: 1px solid var(--card-border);">
+      <h2 id="activeGameTitle">Название игры</h2>
+      <p id="activeGameDesc" style="color: var(--text-muted); margin-top: 8px; font-size: 0.9rem;">Идет активная игровая сессия...</p>
+      <div id="gameCanvasWrapper" style="margin-top: 20px;"></div>
+    </div>
+  </main>
+
+  <!-- Bottom Navigation Bar (п. 3.1) -->
+  <nav class="bottom-nav">
+    <button id="navCatalog" class="nav-item active" onclick="switchTab('catalog')">
+      <span class="nav-icon">🎮</span>
+      <span>Игры</span>
+    </button>
+    <button id="navProfile" class="nav-item" onclick="switchTab('profile')">
+      <span class="nav-icon">👤</span>
+      <span>Профиль</span>
+    </button>
+  </nav>
+
+  <!-- Paywall Modal (Раздел 2.6, 6, 7 RULES.md) -->
+  <div id="paywallModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">⭐️ Доступ к игре</h3>
+      <p id="paywallReason" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+        Для продолжения игры без ограничений выберите подходящий вариант:
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button class="btn-primary" onclick="buyProduct('plus_30d')">
+          👑 Plus на 30 дней — 199 Stars
+        </button>
+        <button class="btn-primary" style="background: #0284c7;" onclick="buyProduct('plus_180d')">
+          👑 Plus на 180 дней — 999 Stars
+        </button>
+        <button class="btn-secondary" onclick="buyProduct('pack_30m')">
+          ⏳ Пакет +30 минут — 25 Stars
+        </button>
+        <button class="btn-secondary" onclick="buyProduct('pack_120m')">
+          ⏳ Пакет +120 минут — 79 Stars
+        </button>
+      </div>
+
+      <button class="btn-secondary" style="margin-top: 16px;" onclick="closePaywall()">Закрыть</button>
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/session.js"></script>
+  <script>
+    let currentApps = [];
+    let currentProfile = null;
+
+    async function initPlatform() {
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+      }
+
+      await window.api.authenticate();
+      await loadProfile();
+      await loadApps();
+    }
+
+    async function loadProfile() {
+      try {
+        currentProfile = await window.api.getProfile();
+        document.getElementById("userName").textContent = currentProfile.user.first_name || "Пользователь";
+        document.getElementById("userAvatar").textContent = (currentProfile.user.first_name || "U")[0].toUpperCase();
+        document.getElementById("userStatus").textContent = currentProfile.user.status;
+
+        updateMinutesDisplay(currentProfile.minutes);
+
+        document.getElementById("refVerified").textContent = currentProfile.referrals.verified_friends;
+      } catch (e) {
+        console.error("Ошибка загрузки профиля:", e);
+      }
+    }
+
+    async function loadApps() {
+      try {
+        const res = await window.api.getApps();
+        currentApps = res.apps || [];
+        renderTiles(currentApps);
+      } catch (e) {
+        console.error("Ошибка загрузки плиток:", e);
+      }
+    }
+
+    function renderTiles(apps) {
+      const container = document.getElementById("tilesGrid");
+      container.innerHTML = "";
+
+      apps.forEach(app => {
+        const card = document.createElement("div");
+        card.className = "tile-card";
+        card.onclick = () => onTileClick(app);
+
+        let badgeHtml = "";
+        if (app.badge) {
+          const badgeClass = app.badge === "NEW" ? "badge-new" : (app.badge === "PLUS" ? "badge-plus" : "badge-locked");
+          badgeHtml = `<span class="tile-badge ${badgeClass}">${app.badge}</span>`;
+        }
+
+        card.innerHTML = `
+          ${badgeHtml}
+          <div class="tile-icon">${app.icon}</div>
+          <div class="tile-title">${app.title}</div>
+          <div class="tile-desc">${app.description}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterTiles(category) {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      event.target.classList.add("active");
+
+      if (category === "all") renderTiles(currentApps);
+      else if (category === "new") renderTiles(currentApps.filter(a => a.badge === "NEW"));
+      else if (category === "plus") renderTiles(currentApps.filter(a => a.status === "plus_only" || a.badge === "PLUS"));
+      else if (category === "favorites") renderTiles(currentApps.slice(0, 2));
+    }
+
+    async function onTileClick(app) {
+      // 2.3 & 2.6: Единый роутер, при блокировке — paywall
+      const ok = await window.sessionMgr.start(app.app_id, (err) => {
+        showPaywall(err);
+        exitGame();
+      });
+
+      if (ok) {
+        document.getElementById("viewCatalog").style.display = "none";
+        document.getElementById("viewProfile").style.display = "none";
+        document.getElementById("viewGame").style.display = "block";
+        document.getElementById("activeGameTitle").textContent = `${app.icon} ${app.title}`;
+        document.getElementById("activeGameDesc").textContent = app.description;
+      }
+    }
+
+    async function exitGame() {
+      await window.sessionMgr.stop();
+      document.getElementById("viewGame").style.display = "none";
+      switchTab("catalog");
+      await loadProfile();
+    }
+
+    function updateMinutesDisplay(minutes) {
+      if (!minutes) return;
+      const val = minutes.is_plus ? "Plus ∞" : `${minutes.remaining_minutes} мин`;
+      document.getElementById("minutesBadge").textContent = `⏳ ${val}`;
+      document.getElementById("statRemainingMin").textContent = val;
+
+      if (minutes.breakdown) {
+        document.getElementById("minutesBreakdown").innerHTML = `
+          • Free база: ${minutes.breakdown.free_minutes} мин<br>
+          • Рефералы: ${minutes.breakdown.referral_minutes} мин<br>
+          • Реклама: ${minutes.breakdown.ad_minutes} мин (макс 10)<br>
+          • Пакеты: ${minutes.breakdown.pack_minutes} мин<br>
+          • Дневной потолок: ${minutes.breakdown.daily_cap_minutes} мин
+        `;
+      }
+    }
+
+    function switchTab(tab) {
+      document.getElementById("navCatalog").classList.toggle("active", tab === "catalog");
+      document.getElementById("navProfile").classList.toggle("active", tab === "profile");
+      document.getElementById("viewCatalog").style.display = tab === "catalog" ? "block" : "none";
+      document.getElementById("viewProfile").style.display = tab === "profile" ? "block" : "none";
+      if (tab === "profile") loadProfile();
+    }
+
+    function showPaywall(reason) {
+      if (reason) document.getElementById("paywallReason").textContent = reason;
+      document.getElementById("paywallModal").classList.add("open");
+    }
+
+    function closePaywall() {
+      document.getElementById("paywallModal").classList.remove("open");
+    }
+
+    async function buyProduct(prod) {
+      const res = await window.api.buyStarsProduct(prod);
+      alert(res.message || "Покупка успешно оформлена!");
+      closePaywall();
+      await loadProfile();
+      await loadApps();
+    }
+
+    async function watchAdReward() {
+      const res = await window.api.claimAdReward();
+      if (res.message) {
+        alert(res.message);
+        await loadProfile();
+      } else {
+        alert(res.error || "Ошибка начисления бонуса");
+      }
+    }
+
+    function copyReferralLink() {
+      if (currentProfile && currentProfile.referrals) {
+        navigator.clipboard.writeText(currentProfile.referrals.referral_link);
+        alert("Реферальная ссылка скопирована в буфер обмена!");
+      }
+    }
+
+    async function checkOfflineMode() {
+      const res = await window.api.requestOfflineToken();
+      if (res.offline_token) {
+        alert("Офлайн-токен получен и активен на 48 часов! Офлайн-игра разрешена.");
+      } else {
+        alert(res.detail || "Офлайн доступен только по подписке Plus.");
+      }
+    }
+
+    function openSupport() {
+      alert("Служба поддержки: @minigame2_bot");
+    }
+
+    function deleteAccount() {
+      if (confirm("Вы уверены, что хотите удалить свой аккаунт платформы?")) {
+        alert("Запрос на удаление аккаунта отправлен.");
+      }
+    }
+
+    window.onload = initPlatform;
+  </script>
+</body>
+</html>
