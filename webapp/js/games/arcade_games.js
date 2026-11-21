@@ -1,15 +1,12 @@
 /**
- * Arcade Games Module (Adapted via game-harvester-adapter from MIT open-source entries)
- * - bounce_breaker: Neon Breakout / Arkanoid (MIT)
- * - gravity_jump: Vertical Platform Jumper (MIT)
+ * Arcade Games Module (game-harvester-adapter)
+ * 1. bounce_breaker
+ * 2. gravity_jump
  */
 
-// ==========================================
-// 1. bounce_breaker (Неоновый арканоид)
-// ==========================================
-class BounceBreakerGame extends BaseGame {
-  constructor(canvas) {
-    super(canvas);
+window.BounceBreakerGame = class BounceBreakerGame extends window.BaseGame {
+  constructor(container) {
+    super(container, { app_id: 'bounce_breaker' });
     this.paddle = { x: 0, y: 0, w: 90, h: 12 };
     this.ball = { x: 0, y: 0, vx: 0, vy: 0, r: 7 };
     this.bricks = [];
@@ -17,17 +14,14 @@ class BounceBreakerGame extends BaseGame {
     this.cols = 6;
     this.score = 0;
     this.lives = 3;
-    this.state = 'playing'; // 'playing', 'win', 'gameover'
+    this.state = 'playing';
+    this.start();
   }
 
-  init() {
-    this.score = 0;
-    this.lives = 3;
-    this.state = 'playing';
+  start() {
     this.paddle.w = Math.max(70, this.width * 0.22);
     this.paddle.x = (this.width - this.paddle.w) / 2;
     this.paddle.y = this.height - 70;
-
     this.resetBall();
     this.initBricks();
   }
@@ -49,7 +43,6 @@ class BounceBreakerGame extends BaseGame {
     const gap = 8;
     const brickW = (totalW - (this.cols - 1) * gap) / this.cols;
     const brickH = 18;
-
     const colors = ['#f43f5e', '#f59e0b', '#38bdf8', '#10b981'];
 
     for (let r = 0; r < this.rows; r++) {
@@ -67,7 +60,6 @@ class BounceBreakerGame extends BaseGame {
   }
 
   handleInput(x, y) {
-    // Steer paddle by dragging or tapping
     this.paddle.x = Math.max(10, Math.min(this.width - this.paddle.w - 10, x - this.paddle.w / 2));
     this.haptic('light');
   }
@@ -75,11 +67,9 @@ class BounceBreakerGame extends BaseGame {
   update(dt) {
     if (this.state !== 'playing') return;
 
-    // Ball movement
     this.ball.x += this.ball.vx * dt;
     this.ball.y += this.ball.vy * dt;
 
-    // Walls
     if (this.ball.x - this.ball.r < 10) {
       this.ball.x = 10 + this.ball.r;
       this.ball.vx = Math.abs(this.ball.vx);
@@ -96,7 +86,6 @@ class BounceBreakerGame extends BaseGame {
       this.playSound(400, 0.05);
     }
 
-    // Paddle collision
     if (
       this.ball.y + this.ball.r >= this.paddle.y &&
       this.ball.y - this.ball.r <= this.paddle.y + this.paddle.h &&
@@ -111,7 +100,6 @@ class BounceBreakerGame extends BaseGame {
       this.playSound(520, 0.08);
     }
 
-    // Bricks collision
     let aliveCount = 0;
     for (const b of this.bricks) {
       if (!b.alive) continue;
@@ -133,14 +121,12 @@ class BounceBreakerGame extends BaseGame {
     }
 
     if (aliveCount === 0) {
-      // Victory! Next wave
       this.score += 200;
       this.haptic('success');
       this.initBricks();
       this.resetBall();
     }
 
-    // Bottom loss
     if (this.ball.y - this.ball.r > this.height) {
       this.lives--;
       this.haptic('error');
@@ -158,7 +144,6 @@ class BounceBreakerGame extends BaseGame {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
 
-    // Top HUD
     ctx.fillStyle = '#94a3b8';
     ctx.font = '600 14px -apple-system, sans-serif';
     ctx.textAlign = 'left';
@@ -168,28 +153,27 @@ class BounceBreakerGame extends BaseGame {
     ctx.fillStyle = '#38bdf8';
     ctx.fillText(`Очки: ${this.score}`, this.width - 20, 30);
 
-    // Bricks
     for (const b of this.bricks) {
       if (!b.alive) continue;
       ctx.save();
       ctx.shadowColor = b.color;
       ctx.shadowBlur = 8;
       ctx.fillStyle = b.color;
-      this.drawRoundedRect(ctx, b.x, b.y, b.w, b.h, 4);
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(b.x, b.y, b.w, b.h, 4) : ctx.rect(b.x, b.y, b.w, b.h);
       ctx.fill();
       ctx.restore();
     }
 
-    // Paddle
     ctx.save();
     ctx.shadowColor = '#38bdf8';
     ctx.shadowBlur = 10;
     ctx.fillStyle = '#38bdf8';
-    this.drawRoundedRect(ctx, this.paddle.x, this.paddle.y, this.paddle.w, this.paddle.h, 6);
+    ctx.beginPath();
+    ctx.roundRect ? ctx.roundRect(this.paddle.x, this.paddle.y, this.paddle.w, this.paddle.h, 6) : ctx.rect(this.paddle.x, this.paddle.y, this.paddle.w, this.paddle.h);
     ctx.fill();
     ctx.restore();
 
-    // Ball
     ctx.save();
     ctx.shadowColor = '#f8fafc';
     ctx.shadowBlur = 12;
@@ -199,40 +183,22 @@ class BounceBreakerGame extends BaseGame {
     ctx.fill();
     ctx.restore();
   }
+};
 
-  drawRoundedRect(ctx, x, y, width, height, radius) {
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
-  }
-}
-
-// ==========================================
-// 2. gravity_jump (Вертикальный прыгун в кибер-стиле)
-// ==========================================
-class GravityJumpGame extends BaseGame {
-  constructor(canvas) {
-    super(canvas);
+window.GravityJumpGame = class GravityJumpGame extends window.BaseGame {
+  constructor(container) {
+    super(container, { app_id: 'gravity_jump' });
     this.player = { x: 0, y: 0, vx: 0, vy: 0, r: 12 };
     this.platforms = [];
     this.score = 0;
-    this.cameraY = 0;
     this.gravity = 650;
     this.jumpForce = -420;
     this.state = 'playing';
+    this.start();
   }
 
-  init() {
+  start() {
     this.score = 0;
-    this.cameraY = 0;
     this.state = 'playing';
     this.player.x = this.width / 2;
     this.player.y = this.height - 120;
@@ -242,8 +208,6 @@ class GravityJumpGame extends BaseGame {
     this.platforms = [];
     const count = 9;
     const spacing = (this.height - 150) / count;
-    
-    // Starting platform under player
     this.platforms.push({ x: this.width / 2 - 35, y: this.height - 80, w: 70, h: 10 });
 
     for (let i = 1; i < count; i++) {
@@ -257,7 +221,6 @@ class GravityJumpGame extends BaseGame {
   }
 
   handleInput(x, y) {
-    // Steer horizontally toward tap/drag
     const dir = x < this.width / 2 ? -1 : 1;
     this.player.vx = dir * 240;
     this.haptic('light');
@@ -270,11 +233,9 @@ class GravityJumpGame extends BaseGame {
     this.player.x += this.player.vx * dt;
     this.player.y += this.player.vy * dt;
 
-    // Wrap around screen horizontally
     if (this.player.x < 0) this.player.x = this.width;
     if (this.player.x > this.width) this.player.x = 0;
 
-    // Platform bounce when falling
     if (this.player.vy > 0) {
       for (const p of this.platforms) {
         if (
@@ -291,7 +252,6 @@ class GravityJumpGame extends BaseGame {
       }
     }
 
-    // Scroll upwards
     if (this.player.y < this.height * 0.45) {
       const diff = this.height * 0.45 - this.player.y;
       this.player.y = this.height * 0.45;
@@ -306,7 +266,6 @@ class GravityJumpGame extends BaseGame {
       }
     }
 
-    // Fall death
     if (this.player.y - this.player.r > this.height) {
       this.state = 'gameover';
       this.haptic('error');
@@ -319,25 +278,22 @@ class GravityJumpGame extends BaseGame {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
 
-    // Top HUD
     ctx.textAlign = 'right';
     ctx.fillStyle = '#38bdf8';
     ctx.font = '600 15px -apple-system, sans-serif';
     ctx.fillText(`Высота: ${this.score}`, this.width - 20, 32);
 
-    // Platforms
     for (const p of this.platforms) {
       ctx.save();
       ctx.shadowColor = '#10b981';
       ctx.shadowBlur = 8;
       ctx.fillStyle = '#10b981';
       ctx.beginPath();
-      ctx.roundRect(p.x, p.y, p.w, p.h, 4);
+      ctx.roundRect ? ctx.roundRect(p.x, p.y, p.w, p.h, 4) : ctx.rect(p.x, p.y, p.w, p.h);
       ctx.fill();
       ctx.restore();
     }
 
-    // Player Hero
     ctx.save();
     ctx.shadowColor = '#38bdf8';
     ctx.shadowBlur = 12;
@@ -347,10 +303,9 @@ class GravityJumpGame extends BaseGame {
     ctx.fill();
     ctx.restore();
   }
-}
+};
 
-// Register games
 if (window.GameRegistry) {
-  window.GameRegistry.register('bounce_breaker', BounceBreakerGame);
-  window.GameRegistry.register('gravity_jump', GravityJumpGame);
+  window.GameRegistry.register('bounce_breaker', window.BounceBreakerGame);
+  window.GameRegistry.register('gravity_jump', window.GravityJumpGame);
 }

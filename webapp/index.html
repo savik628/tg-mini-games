@@ -248,13 +248,15 @@
       const container = document.getElementById("tilesGrid");
       container.innerHTML = "";
 
-      // Фильтруем: показываем строго те игры, которые реально зарегистрированы и готовы к запуску
+      // Фильтруем: показываем игры, которые объявлены в GameRegistry
       const readyApps = apps.filter(app => {
-        return window.GameRegistry && window.GameRegistry.games && window.GameRegistry.games.has(app.app_id);
+        if (!window.GameRegistry || !window.GameRegistry.games) return true;
+        const getter = window.GameRegistry.games[app.app_id];
+        return typeof getter === 'function' && getter() !== undefined;
       });
 
       if (readyApps.length === 0) {
-        container.innerHTML = `<div style="grid-column: span 2; text-align: center; color: var(--text-muted); padding: 40px 10px;">🎮 Игры подготавливаются...</div>`;
+        container.innerHTML = `<div style="grid-column: span 2; text-align: center; color: var(--text-muted); padding: 40px 10px;">🎮 Загрузка каталога...</div>`;
         return;
       }
 

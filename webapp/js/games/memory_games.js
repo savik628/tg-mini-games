@@ -3,24 +3,21 @@
  * Game: matrix_grid (Неоновая сетка памяти)
  */
 
-class MatrixGridGame extends BaseGame {
-  constructor(canvas) {
-    super(canvas);
-    this.gridSize = 3; // 3x3
+window.MatrixGridGame = class MatrixGridGame extends window.BaseGame {
+  constructor(container) {
+    super(container, { app_id: 'matrix_grid' });
+    this.gridSize = 3;
     this.targetCells = [];
     this.selectedCells = [];
-    this.state = 'showing'; // 'showing', 'input', 'success', 'fail'
+    this.state = 'showing';
     this.showTimer = 1.5;
     this.level = 1;
     this.score = 0;
-  }
-
-  init() {
     this.startRound();
   }
 
   startRound() {
-    this.gridSize = Math.min(3 + Math.floor((this.level - 1) / 3), 5); // 3x3, 4x4, up to 5x5
+    this.gridSize = Math.min(3 + Math.floor((this.level - 1) / 3), 5);
     const totalCells = this.gridSize * this.gridSize;
     const highlightCount = Math.min(3 + this.level, Math.floor(totalCells * 0.45));
     
@@ -46,7 +43,6 @@ class MatrixGridGame extends BaseGame {
     const startX = (this.width - size) / 2;
     const startY = (this.height - size) / 2;
     const cellSize = size / this.gridSize;
-    const gap = 8;
 
     if (x < startX || x > startX + size || y < startY || y > startY + size) return;
 
@@ -60,9 +56,8 @@ class MatrixGridGame extends BaseGame {
     this.haptic('light');
 
     if (this.targetCells.includes(index)) {
-      this.playSound(587.33, 0.08); // D5 success note
+      this.playSound(587.33, 0.08);
       if (this.selectedCells.length === this.targetCells.length) {
-        // Level clear!
         this.score += this.level * 100;
         this.level++;
         this.state = 'success';
@@ -71,10 +66,9 @@ class MatrixGridGame extends BaseGame {
         setTimeout(() => this.startRound(), 800);
       }
     } else {
-      // Mistake!
       this.state = 'fail';
       this.haptic('error');
-      this.playSound(220, 0.3); // A3 low error buzz
+      this.playSound(220, 0.3);
       setTimeout(() => {
         this.gameOver(this.score);
       }, 900);
@@ -86,7 +80,7 @@ class MatrixGridGame extends BaseGame {
       this.showTimer -= dt;
       if (this.showTimer <= 0) {
         this.state = 'input';
-        this.playSound(523.25, 0.08); // C5 start sound
+        this.playSound(523.25, 0.08);
       }
     }
   }
@@ -95,7 +89,6 @@ class MatrixGridGame extends BaseGame {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
 
-    // Top HUD
     ctx.fillStyle = '#94a3b8';
     ctx.font = '600 15px -apple-system, sans-serif';
     ctx.textAlign = 'left';
@@ -105,7 +98,6 @@ class MatrixGridGame extends BaseGame {
     ctx.fillStyle = '#38bdf8';
     ctx.fillText(`Очки: ${this.score}`, this.width - 24, 34);
 
-    // Prompt text
     ctx.textAlign = 'center';
     ctx.font = '700 16px -apple-system, sans-serif';
     if (this.state === 'showing') {
@@ -122,7 +114,6 @@ class MatrixGridGame extends BaseGame {
       ctx.fillText('❌ Ошибка! Раунд завершён', this.width / 2, 70);
     }
 
-    // Grid rendering
     const size = Math.min(this.width, this.height) * 0.76;
     const startX = (this.width - size) / 2;
     const startY = (this.height - size) / 2 + 20;
@@ -135,7 +126,7 @@ class MatrixGridGame extends BaseGame {
         const cellX = startX + col * (cellSize + gap);
         const cellY = startY + row * (cellSize + gap);
 
-        let cellColor = '#1e293b'; // Default card surface
+        let cellColor = '#1e293b';
         let borderColor = 'rgba(255, 255, 255, 0.08)';
         let isGlow = false;
 
@@ -145,11 +136,11 @@ class MatrixGridGame extends BaseGame {
           isGlow = true;
         } else if (this.selectedCells.includes(index)) {
           if (this.targetCells.includes(index)) {
-            cellColor = '#10b981'; // Green correct
+            cellColor = '#10b981';
             borderColor = '#34d399';
             isGlow = true;
           } else {
-            cellColor = '#f43f5e'; // Red wrong
+            cellColor = '#f43f5e';
             borderColor = '#fb7185';
             isGlow = true;
           }
@@ -161,7 +152,8 @@ class MatrixGridGame extends BaseGame {
           ctx.shadowBlur = 12;
         }
         ctx.fillStyle = cellColor;
-        this.drawRoundedRect(ctx, cellX, cellY, cellSize, cellSize, 10);
+        ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(cellX, cellY, cellSize, cellSize, 10) : ctx.rect(cellX, cellY, cellSize, cellSize);
         ctx.fill();
 
         ctx.strokeStyle = borderColor;
@@ -171,23 +163,8 @@ class MatrixGridGame extends BaseGame {
       }
     }
   }
+};
 
-  drawRoundedRect(ctx, x, y, width, height, radius) {
-    ctx.beginPath();
-    ctx.moveTo(x + radius, y);
-    ctx.lineTo(x + width - radius, y);
-    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-    ctx.lineTo(x + width, y + height - radius);
-    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-    ctx.lineTo(x + radius, y + height);
-    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-    ctx.lineTo(x, y + radius);
-    ctx.quadraticCurveTo(x, y, x + radius, y);
-    ctx.closePath();
-  }
-}
-
-// Register in Game Registry
 if (window.GameRegistry) {
-  window.GameRegistry.register('matrix_grid', MatrixGridGame);
+  window.GameRegistry.register('matrix_grid', window.MatrixGridGame);
 }
