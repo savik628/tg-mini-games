@@ -1,12 +1,15 @@
-// Менеджер активной игровой сессии и Heartbeat (Раздел 4.7-4.8 RULES.md)
+// Менеджер сессии с фоновой очередью офлайн-синхронизации (Offline Sync Queue v1.1)
 class SessionManager {
   constructor() {
     this.currentSessionId = null;
     this.currentAppId = null;
     this.heartbeatTimer = null;
     this.isActive = false;
+    this.pendingHeartbeats = [];
 
-    // 4.7: Минуты не списываются при паузе/сворачивании
+    // При выходе в онлайн — отправляем накопленный буфер
+    window.addEventListener("online", () => this.flushOfflineQueue());
+
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         this.pause();
@@ -33,21 +36,42 @@ class SessionManager {
     this.isActive = true;
     this.onTimeExceeded = onTimeExceeded;
 
-    // Запуск цикла Heartbeat раз в 30 секунд (п. 4.8)
     this.heartbeatTimer = setInterval(async () => {
       if (!this.isActive || !this.currentSessionId) return;
 
-      const hbRes = await window.api.sendHeartbeat(this.currentSessionId);
-      if (hbRes.error) {
-        console.warn("Heartbeat error:", hbRes.error);
-        this.stop();
-        if (this.onTimeExceeded) this.onTimeExceeded(hbRes.error);
-      } else {
-        window.updateMinutesDisplay(hbRes.minutes);
+      try {
+        const hbRes = await window.api.sendHeartbeat(this.currentSessionId);
+        if (hbRes.error) {
+          console.warn("Heartbeat error:", hbRes.error);
+          this.stop();
+          if (this.onTimeExceeded) this.onTimeExceeded(hbRes.error);
+        } else {
+          window.updateMinutesDisplay(hbRes.minutes);
+        }
+      } catch (err) {
+        // Раздел 8.6: При разрыве сети накапливаем heartbeat в буфер
+        console.warn("Сетевой сбой heartbeat, сохраняем в офлайн-очередь:", err);
+        this.pendingHeartbeats.push({
+          session_id: this.currentSessionId,
+          timestamp: Date.now()
+        });
       }
     }, 30000);
 
     return true;
+  }
+
+  async flushOfflineQueue() {
+    if (this.pendingHeartbeats.length === 0) return;
+    console.log(`Отправка ${this.pendingHeartbeats.length} отложенных heartbeat...`);
+    for (const item of [...this.pendingHeartbeats]) {
+      try {
+        await window.api.sendHeartbeat(item.session_id);
+        this.pendingHeartbeats.shift();
+      } catch (e) {
+        break;
+      }
+    }
   }
 
   pause() {
@@ -66,7 +90,9 @@ class SessionManager {
       this.heartbeatTimer = null;
     }
     if (this.currentSessionId) {
-      await window.api.endSession(this.currentSessionId);
+      try {
+        await window.api.endSession(this.currentSessionId);
+      } catch (e) {}
       this.currentSessionId = null;
     }
     this.isActive = false;
