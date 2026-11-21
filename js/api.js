@@ -66,9 +66,14 @@ class PlatformAPI {
     } catch (e) {
       console.warn("Backend /me unreachable, using default player profile:", e);
     }
-    // Fallback profile
+
+    // Fallback profile с точным учетом пакетов минут и Plus
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
     const isLocalPlus = localStorage.getItem("user_is_plus") === "true";
+    const extraMinutes = parseFloat(localStorage.getItem("user_extra_minutes") || "0");
+    const baseMinutes = 10.0;
+    const totalRemaining = isLocalPlus ? 999999 : (baseMinutes + extraMinutes);
+
     return {
       user: {
         user_id: tgUser?.id || 1001,
@@ -76,13 +81,14 @@ class PlatformAPI {
         status: isLocalPlus ? "plus" : "free"
       },
       minutes: {
-        total_remaining: isLocalPlus ? 999999 : 10.0,
-        remaining_minutes: isLocalPlus ? 999999 : 10.0,
+        total_remaining: totalRemaining,
+        remaining_minutes: isLocalPlus ? "Plus ∞" : totalRemaining.toFixed(1),
         is_plus: isLocalPlus,
         streak_days: 1,
         breakdown: {
-          free_minutes: 10.0,
+          free_minutes: baseMinutes,
           streak_minutes: 0,
+          extra_minutes: extraMinutes,
           referral_minutes: 0
         }
       },
@@ -198,9 +204,21 @@ class PlatformAPI {
       return new Promise((resolve) => {
         window.Telegram.WebApp.openInvoice(invoiceLink, (status) => {
           if (status === "paid") {
-            // Мгновенно активируем статус Plus локально
-            localStorage.setItem("user_is_plus", "true");
-            resolve({ status: "ok", message: `Оплата ${starsAmount} Stars успешно завершена! Подписка активирована.` });
+            // Дифференцированное начисление: Plus подписка vs Пакет минут
+            if (productKey === "plus_30d" || productKey === "plus_180d") {
+              localStorage.setItem("user_is_plus", "true");
+              resolve({ status: "ok", message: `Оплата ${starsAmount} Stars завершена! Подписка Plus активирована.` });
+            } else if (productKey === "pack_30m") {
+              const currentExtra = parseFloat(localStorage.getItem("user_extra_minutes") || "0");
+              localStorage.setItem("user_extra_minutes", (currentExtra + 30).toString());
+              resolve({ status: "ok", message: `Оплата ${starsAmount} Stars завершена! Начислено +30 минут.` });
+            } else if (productKey === "pack_120m") {
+              const currentExtra = parseFloat(localStorage.getItem("user_extra_minutes") || "0");
+              localStorage.setItem("user_extra_minutes", (currentExtra + 120).toString());
+              resolve({ status: "ok", message: `Оплата ${starsAmount} Stars завершена! Начислено +120 минут.` });
+            } else {
+              resolve({ status: "ok", message: `Оплата ${starsAmount} Stars успешно завершена!` });
+            }
           } else if (status === "cancelled") {
             resolve({ status: "cancelled", message: "Оплата отменена." });
           } else if (status === "failed") {
