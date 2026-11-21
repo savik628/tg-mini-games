@@ -193,9 +193,30 @@
         window.Telegram.WebApp.expand();
       }
 
-      await window.api.authenticate();
-      await loadProfile();
-      await loadApps();
+      // 1. Сразу же мгновенно отрисовываем плитки каталога, чтобы не блокировать интерфейс
+      if (window.DEFAULT_APPS && window.DEFAULT_APPS.length > 0) {
+        currentApps = window.DEFAULT_APPS;
+        renderTiles(currentApps);
+      }
+
+      // 2. Фоново авторизуемся и синхронизируем данные
+      try {
+        await window.api.authenticate();
+      } catch (e) {
+        console.warn("Auth error ignored:", e);
+      }
+
+      try {
+        await loadProfile();
+      } catch (e) {
+        console.warn("Profile load error:", e);
+      }
+
+      try {
+        await loadApps();
+      } catch (e) {
+        console.warn("Apps load error:", e);
+      }
     }
 
     async function loadProfile() {
