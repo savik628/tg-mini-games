@@ -12,7 +12,7 @@ env_path = Path(__file__).resolve().parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-WEBAPP_URL = os.getenv("WEBAPP_URL", "https://telegram.org")  # Будет заменен на ваш HTTPS URL
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://savik628.github.io/tg-mini-games/")  # Будет заменен на ваш HTTPS URL
 
 if not BOT_TOKEN:
     raise ValueError("BOT_TOKEN не найден в .env файле!")
