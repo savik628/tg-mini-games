@@ -68,16 +68,17 @@ class PlatformAPI {
     }
     // Fallback profile
     const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    const isLocalPlus = localStorage.getItem("user_is_plus") === "true";
     return {
       user: {
         user_id: tgUser?.id || 1001,
         first_name: tgUser?.first_name || "Игрок",
-        status: "free"
+        status: isLocalPlus ? "plus" : "free"
       },
       minutes: {
-        total_remaining: 10.0,
-        remaining_minutes: 10.0,
-        is_plus: false,
+        total_remaining: isLocalPlus ? 999999 : 10.0,
+        remaining_minutes: isLocalPlus ? 999999 : 10.0,
+        is_plus: isLocalPlus,
         streak_days: 1,
         breakdown: {
           free_minutes: 10.0,
@@ -160,31 +161,61 @@ class PlatformAPI {
   }
 
   async buyStarsProduct(productKey) {
-    const res = await this.fetchWithAuth(`${API_BASE}/payment/stars/invoice`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ product: productKey })
-    });
-    const data = await res.json();
+    const staticInvoices = {
+      "plus_30d": { link: "https://t.me/$En1kvnmMEEgiIAAAW8nTriEXlhc", stars: 199, title: "Plus на 30 дней" },
+      "plus_180d": { link: "https://t.me/$kMhuRHmMEEgjIAAAJ0Tj9GwUCTw", stars: 999, title: "Plus на 180 дней" },
+      "pack_30m": { link: "https://t.me/$NZpmsXmMEEgkIAAAv0oCN4IVpnI", stars: 25, title: "Пакет +30 минут" },
+      "pack_120m": { link: "https://t.me/$jFTO5nmMEEglIAAAJJEykxECYOY", stars: 79, title: "Пакет +120 минут" }
+    };
 
-    // Если Telegram WebApp поддерживает нативную оплату инвойсов и сервер вернул invoice_link
-    if (data.invoice_link && window.Telegram?.WebApp?.openInvoice) {
+    let invoiceLink = null;
+    let starsAmount = 199;
+
+    try {
+      const res = await this.fetchWithAuth(`${API_BASE}/payment/stars/invoice`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product: productKey })
+      });
+      if (res && res.ok) {
+        const data = await res.json();
+        if (data.invoice_link) {
+          invoiceLink = data.invoice_link;
+          starsAmount = data.stars;
+        }
+      }
+    } catch (e) {
+      console.warn("Backend /payment/stars/invoice unreachable, using pre-generated Bot Stars invoice:", e);
+    }
+
+    if (!invoiceLink && staticInvoices[productKey]) {
+      invoiceLink = staticInvoices[productKey].link;
+      starsAmount = staticInvoices[productKey].stars;
+    }
+
+    // Открываем нативную шторку оплаты инвойса в Telegram WebApp
+    if (invoiceLink && window.Telegram?.WebApp?.openInvoice) {
       return new Promise((resolve) => {
-        window.Telegram.WebApp.openInvoice(data.invoice_link, (status) => {
+        window.Telegram.WebApp.openInvoice(invoiceLink, (status) => {
           if (status === "paid") {
-            resolve({ status: "ok", message: `Оплата ${data.stars} Stars успешно завершена!` });
+            // Мгновенно активируем статус Plus локально
+            localStorage.setItem("user_is_plus", "true");
+            resolve({ status: "ok", message: `Оплата ${starsAmount} Stars успешно завершена! Подписка активирована.` });
           } else if (status === "cancelled") {
             resolve({ status: "cancelled", message: "Оплата отменена." });
           } else if (status === "failed") {
-            resolve({ status: "error", message: "Ошибка при проведении платежа Stars." });
+            resolve({ status: "error", message: "Ошибка проведения платежа Telegram Stars." });
           } else {
             resolve({ status: status, message: `Статус оплаты: ${status}` });
           }
         });
       });
+    } else if (invoiceLink && window.Telegram?.WebApp?.openTelegramLink) {
+      window.Telegram.WebApp.openTelegramLink(invoiceLink);
+      return { status: "pending", message: "Инвойс открыт в Telegram." };
     }
 
-    return data;
+    return { status: "error", message: "Не удалось открыть инвойс оплаты." };
   }
 
   async requestOfflineToken() {
