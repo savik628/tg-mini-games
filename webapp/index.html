@@ -3,174 +3,159 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Мини игры — Платформа v1.1</title>
+  <title>Arcade Platform</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="./css/style.css?v=1.2">
+  <link rel="stylesheet" href="./css/style.css?v=2.0">
 </head>
-<body class="tg-theme">
+<body>
 
-  <!-- Premium Sticky Header -->
-  <header>
-    <div class="brand-container">
-      <span class="brand-icon">🎮</span>
-      <span class="brand-title">Мини игры</span>
+  <!-- Minimalist Sticky Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="user-badge" onclick="switchTab('profile')">
+        <div id="userAvatarWrap" class="user-avatar-wrap">U</div>
+        <div class="user-info">
+          <span id="userNameText" class="user-name">Player</span>
+          <span id="userTierText" class="user-status">Free Tier</span>
+        </div>
+      </div>
     </div>
-    <div id="minutesBadge" class="minutes-pill" onclick="showPaywall()">
-      <span id="minutesText">⏳ 10.0 мин</span>
-      <span class="star-badge">⭐️ Plus</span>
+    <div class="header-right">
+      <div id="minutesPill" class="pill-stat" onclick="showPaywall('Продление доступа к аркадам')">
+        <span class="dot-indicator"></span>
+        <span id="minutesValText">10.0 min</span>
+      </div>
     </div>
   </header>
 
-  <!-- Main View: Каталог плиток игр (Раздел 2 RULES.md) -->
-  <main id="viewCatalog" class="view-screen">
-    <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterTiles('all')">Все</button>
-      <button class="filter-btn" onclick="filterTiles('new')">Новые</button>
-      <button class="filter-btn" onclick="filterTiles('plus')">Для подписчиков</button>
-      <button class="filter-btn" onclick="filterTiles('favorites')">Избранное</button>
-    </div>
-
-    <!-- 2-колоночная сетка плиток (п. 2.1) -->
-    <div id="tilesGrid" class="catalog-grid"></div>
-  </main>
-
-  <!-- Profile View: Профиль пользователя (Раздел 3 RULES.md) -->
-  <main id="viewProfile" class="view-screen" style="display: none;">
-    <div class="profile-box">
-      <div class="user-card">
-        <div id="userAvatar" class="user-avatar">?</div>
-        <div>
-          <div id="userName" style="font-weight: 700; font-size: 1.1rem;">Игрок</div>
-          <div id="userStatus" style="font-size: 0.85rem; color: var(--accent);">Free</div>
-        </div>
-      </div>
-
-      <!-- Серия заходов (Daily Streak v1.1) -->
-      <div class="stat-card" style="border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.05);">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div style="font-size: 0.9rem; font-weight: 700; color: var(--accent);">🔥 Серия посещений:</div>
-          <div id="streakDaysBadge" style="font-size: 1rem; font-weight: 800; color: var(--accent);">1 день</div>
-        </div>
-        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
-          Заходите каждый день и получайте до +5 бонусных минут ежедневно!
-        </div>
-      </div>
-
-      <!-- Stats: Минуты и сброс -->
-      <div class="stat-grid">
-        <div class="stat-card">
-          <div id="statRemainingMin" class="stat-val">10.0</div>
-          <div class="stat-lbl">Остаток минут сегодня</div>
-        </div>
-        <div class="stat-card">
-          <div id="statResetTime" class="stat-val">00:00 UTC</div>
-          <div class="stat-lbl">Время сброса лимита</div>
-        </div>
-      </div>
-
-      <!-- Источники минут -->
-      <div class="stat-card">
-        <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">Источники минут на сегодня:</div>
-        <div id="minutesBreakdown" style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.6;">
-          • Free база: 10 мин<br>
-          • Серия дней: 0 мин<br>
-          • Рефералы: 0 мин<br>
-          • Реклама: 0 мин (макс 10)<br>
-          • Пакеты: 0 мин
-        </div>
-        <button class="btn-primary" onclick="watchAdReward()" style="margin-top: 10px; font-size: 0.85rem;">
-          📺 Смотреть рекламу (+5 мин)
-        </button>
-      </div>
-
-      <!-- Реферальная система -->
-      <div class="stat-card">
-        <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px;">👥 Приглашай друзей (+15 мин)</div>
-        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
-          Подтверждено друзей: <b id="refVerified" style="color: var(--text-main);">0</b> (лимит: 2/день, 20/мес)
-        </div>
-        <button class="btn-primary" onclick="copyReferralLink()">
-          🔗 Скопировать ссылку приглашения
-        </button>
-      </div>
-
-      <!-- Plus & Офлайн режим -->
-      <div class="stat-card">
-        <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px;">⭐️ Подписка Plus</div>
-        <div id="plusStatusText" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
-          Безлимитная игра без рекламы и полный офлайн-доступ.
-        </div>
-        <button class="btn-primary" onclick="showPaywall()">Оформить Plus за Stars</button>
-        <button class="btn-secondary" onclick="checkOfflineMode()" style="margin-top: 8px;">📶 Проверить офлайн-токен</button>
-      </div>
-
-      <!-- Юридический блок документов -->
-      <div class="stat-card">
-        <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 6px;">📄 Документы</div>
-        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem;">
-          <a href="./docs/terms.md" target="_blank" style="color: var(--primary);">Пользовательское соглашение</a>
-          <a href="./docs/privacy.md" target="_blank" style="color: var(--primary);">Политика конфиденциальности</a>
-          <a href="./docs/subscription.md" target="_blank" style="color: var(--primary);">Правила подписки</a>
-        </div>
-      </div>
-
-      <button class="btn-secondary" onclick="openSupport()">🎧 Поддержка</button>
-      <button class="btn-secondary" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.3);" onclick="deleteAccount()">
-        🗑 Удалить аккаунт
+  <!-- View 1: Arcade Lobby (Каталог) -->
+  <main id="viewCatalog" class="view-container">
+    
+    <!-- Hero Banner (Featured Game) -->
+    <div class="hero-card" onclick="launchFeaturedGame()">
+      <span class="hero-tag">Featured</span>
+      <h2 class="hero-title">Неоновый арканоид</h2>
+      <p class="hero-desc">Прецизионная физика отражения, цепные разрушения и кинестетический отклик.</p>
+      <button class="hero-action-btn">
+        <span>Играть</span>
+        <span style="font-weight: 700;">→</span>
       </button>
     </div>
+
+    <!-- Category Chips Bar -->
+    <div class="categories-bar">
+      <button class="chip-btn active" onclick="filterCategory('all', this)">Все игры</button>
+      <button class="chip-btn" onclick="filterCategory('arcade', this)">Аркады</button>
+      <button class="chip-btn" onclick="filterCategory('reaction', this)">Реакция</button>
+      <button class="chip-btn" onclick="filterCategory('memory', this)">Память</button>
+    </div>
+
+    <!-- Section Heading -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 class="section-title" id="catalogueHeading">Каталог</h3>
+      <span id="gamesCountBadge" style="font-size: 11px; color: var(--text-tertiary); font-weight: 600;">9 игр</span>
+    </div>
+
+    <!-- Clean Cards Grid -->
+    <div id="tilesGrid" class="games-grid"></div>
   </main>
 
-  <!-- Game Player Screen with In-Game HUD -->
-  <main id="viewGame" style="display: none;">
-    <div class="game-hud">
-      <div class="hud-left">
-        <button class="hud-btn" onclick="openPauseModal()" title="Пауза">⏸</button>
-        <span id="activeGameTitle" style="font-size: 14px; font-weight: 700; color: #fff;">Игра</span>
+  <!-- View 2: Profile & Stats -->
+  <main id="viewProfile" class="view-container" style="display: none;">
+    <h3 class="section-title" style="font-size: 20px; margin-bottom: 16px;">Профиль игрока</h3>
+
+    <div class="profile-stat-box">
+      <div>
+        <div style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase;">Игровой баланс</div>
+        <div id="profBalanceVal" style="font-size: 18px; font-weight: 700; color: #fff; margin-top: 2px;">10.0 минут</div>
       </div>
-      <div class="hud-right">
-        <div id="gameHudMinutes" class="minutes-pill" style="padding: 4px 10px; font-size: 12px;" onclick="showPaywall()">
-          ⏳ <span id="hudMinutesVal">10.0</span> мин
-        </div>
-        <button class="hud-btn" onclick="window.snd.toggleMute()" id="hudSoundBtn" title="Звук">🔊</button>
+      <button class="btn-primary" style="width: auto; padding: 8px 14px;" onclick="showPaywall('Пополнение баланса')">Пополнить</button>
+    </div>
+
+    <div class="profile-stat-box">
+      <div>
+        <div style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase;">Серия активности</div>
+        <div id="profStreakVal" style="font-size: 16px; font-weight: 600; color: #fff; margin-top: 2px;">1 день</div>
+      </div>
+      <span style="font-size: 12px; color: var(--accent-cyan); font-weight: 600;">+1 мин/день</span>
+    </div>
+
+    <div class="profile-stat-box" style="flex-direction: column; align-items: flex-start; gap: 10px;">
+      <div style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase;">Партнерская программа</div>
+      <div style="font-size: 13px; color: var(--text-secondary);">Приглашайте друзей и получайте до +10 минут ежедневно.</div>
+      <button class="btn-secondary" onclick="copyRefLink()">Скопировать ссылку приглашения</button>
+    </div>
+  </main>
+
+  <!-- Bottom Minimalist Dock -->
+  <nav class="bottom-dock-nav">
+    <button id="dockCatalog" class="dock-tab active" onclick="switchTab('catalog')">
+      <span class="dock-label">Каталог</span>
+      <span class="dock-dot"></span>
+    </button>
+    <button id="dockStore" class="dock-tab" onclick="showPaywall('Магазин подписки')">
+      <span class="dock-label">Магазин</span>
+      <span class="dock-dot"></span>
+    </button>
+    <button id="dockProfile" class="dock-tab" onclick="switchTab('profile')">
+      <span class="dock-label">Профиль</span>
+      <span class="dock-dot"></span>
+    </button>
+  </nav>
+
+  <!-- Seamless Game Player Screen -->
+  <main id="viewGame" style="display: none;">
+    <div class="in-game-top-bar">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button class="game-icon-btn" onclick="exitGameSafely()" title="Назад">✕</button>
+        <span id="activeGameTitle" class="in-game-title">Игра</span>
+      </div>
+      <div class="in-game-controls">
+        <button class="game-icon-btn" onclick="togglePauseGame()" title="Пауза">❚❚</button>
       </div>
     </div>
-    <div class="game-canvas-container">
+    <div class="canvas-viewport">
       <div id="gameCanvasWrapper" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;"></div>
     </div>
   </main>
 
-  <!-- Floating Bottom Dock Nav -->
-  <nav class="bottom-dock">
-    <button id="navCatalog" class="dock-item active" onclick="switchTab('catalog')">
-      <span class="dock-icon">🎮</span>
-      <span>Каталог</span>
-    </button>
-    <button id="navProfile" class="dock-item" onclick="switchTab('profile')">
-      <span class="dock-icon">👤</span>
-      <span>Профиль</span>
-    </button>
-  </nav>
-
-  <!-- Paywall Modal -->
-  <div id="paywallModal" class="modal-overlay">
-    <div class="modal-content">
-      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">⭐️ Доступ к игре</h3>
-      <p id="paywallReason" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
-        Для продолжения игры без ограничений выберите подходящий вариант:
-      </p>
-
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-        <button class="btn-primary" onclick="buyProduct('plus_30d')">👑 Plus на 30 дней — 199 Stars</button>
-        <button class="btn-primary" style="background: #0284c7;" onclick="buyProduct('plus_180d')">👑 Plus на 180 дней — 999 Stars</button>
-        <button class="btn-secondary" onclick="buyProduct('pack_30m')">⏳ Пакет +30 минут — 25 Stars</button>
-        <button class="btn-secondary" onclick="buyProduct('pack_120m')">⏳ Пакет +120 минут — 79 Stars</button>
-      </div>
-
-      <button class="btn-secondary" style="margin-top: 16px;" onclick="closePaywall()">Закрыть</button>
+  <!-- Modal: Pause -->
+  <div id="pauseModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3 class="modal-title-text">Пауза</h3>
+      <p class="modal-desc-text">Сессия приостановлена. Минуты баланса не расходуются.</p>
+      <button class="btn-primary" onclick="resumeGameSafely()">Продолжить</button>
+      <button class="btn-secondary" onclick="exitGameFromPause()">Выйти в каталог</button>
     </div>
   </div>
 
+  <!-- Modal: Paywall / Store -->
+  <div id="paywallModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3 class="modal-title-text">Подписка Plus</h3>
+      <p id="paywallSubText" class="modal-desc-text">Неограниченное игровое время и доступ ко всем аркадам.</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button class="btn-primary" onclick="buyPlan('plus_30d')">Plus на 30 дней — 199 Stars</button>
+        <button class="btn-secondary" onclick="buyPlan('pack_120m')">Пакет +120 минут — 79 Stars</button>
+        <button class="btn-secondary" onclick="buyPlan('pack_30m')">Пакет +30 минут — 25 Stars</button>
+      </div>
+
+      <button class="btn-secondary" style="border: none; margin-top: 4px;" onclick="closePaywall()">Закрыть</button>
+    </div>
+  </div>
+
+  <!-- Modal: Results -->
+  <div id="resultsModal" class="modal-overlay">
+    <div class="modal-card" style="text-align: center;">
+      <h3 class="modal-title-text">Раунд завершен</h3>
+      <p id="resultsScoreInfo" style="font-size: 20px; font-weight: 700; color: var(--accent-cyan); margin: 4px 0 12px 0;">0</p>
+      <button class="btn-primary" onclick="restartCurrentGame()">Играть снова</button>
+      <button class="btn-secondary" onclick="exitFromResults()">В каталог</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
   <script src="./js/audio.js"></script>
   <script src="./js/apps_data.js"></script>
   <script src="./js/api.js"></script>
@@ -178,340 +163,265 @@
   <script src="./js/games/base_game.js"></script>
   <script src="./js/games/reaction_games.js"></script>
   <script src="./js/games/memory_games.js"></script>
-  <script src="./js/games/puzzle_games.js"></script>
   <script src="./js/games/arcade_games.js"></script>
-  <script src="./js/games/plus_games.js"></script>
   <script src="./js/games/registry.js"></script>
+
   <script>
     let currentApps = [];
     let currentProfile = null;
     let activeGameObject = null;
+    let activeApp = null;
+    let currentTab = 'catalog';
+
+    // Telegram BackButton Lifecycle Controller
+    function setupTelegramBackButton() {
+      const tg = window.Telegram?.WebApp;
+      if (!tg) return;
+
+      if (tg.BackButton) {
+        tg.BackButton.onClick(() => {
+          if (document.getElementById("viewGame").style.display === "flex" || document.getElementById("viewGame").style.display === "block") {
+            exitGameSafely();
+          } else if (currentTab !== 'catalog') {
+            switchTab('catalog');
+          }
+        });
+      }
+    }
 
     async function initPlatform() {
-      if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        if (tg.setHeaderColor) tg.setHeaderColor('#07090e');
+        if (tg.setBackgroundColor) tg.setBackgroundColor('#07090e');
       }
 
-      // 1. Сразу же мгновенно отрисовываем плитки каталога, чтобы не блокировать интерфейс
+      setupTelegramBackButton();
+
+      // Render catalogue immediately from local list
       if (window.DEFAULT_APPS && window.DEFAULT_APPS.length > 0) {
         currentApps = window.DEFAULT_APPS;
-        renderTiles(currentApps);
+        renderCleanTiles(currentApps);
       }
 
-      // 2. Фоново авторизуемся и синхронизируем данные
-      try {
-        await window.api.authenticate();
-      } catch (e) {
-        console.warn("Auth error ignored:", e);
-      }
-
-      try {
-        await loadProfile();
-      } catch (e) {
-        console.warn("Profile load error:", e);
-      }
-
-      try {
-        await loadApps();
-      } catch (e) {
-        console.warn("Apps load error:", e);
-      }
+      // Load remote data in background
+      try { await window.api.authenticate(); } catch (e) {}
+      try { await loadProfile(); } catch (e) {}
     }
 
-    async function loadProfile() {
-      try {
-        currentProfile = await window.api.getProfile();
-        document.getElementById("userName").textContent = currentProfile.user.first_name || "Пользователь";
-        document.getElementById("userAvatar").textContent = (currentProfile.user.first_name || "U")[0].toUpperCase();
-        document.getElementById("userStatus").textContent = currentProfile.user.status;
-        document.getElementById("streakDaysBadge").textContent = `${currentProfile.minutes.streak_days || 1} дней`;
-
-        updateMinutesDisplay(currentProfile.minutes);
-        document.getElementById("refVerified").textContent = currentProfile.referrals.verified_friends;
-      } catch (e) {
-        console.error("Ошибка загрузки профиля:", e);
-      }
-    }
-
-    async function loadApps() {
-      try {
-        const res = await window.api.getApps();
-        currentApps = res.apps || [];
-        renderTiles(currentApps);
-      } catch (e) {
-        console.error("Ошибка загрузки плиток:", e);
-      }
-    }
-
-    function renderTiles(apps) {
+    function renderCleanTiles(apps) {
       const container = document.getElementById("tilesGrid");
       container.innerHTML = "";
 
-      // Фильтруем: показываем игры, которые объявлены в GameRegistry
       const readyApps = apps.filter(app => {
         if (!window.GameRegistry || !window.GameRegistry.games) return true;
         const getter = window.GameRegistry.games[app.app_id];
         return typeof getter === 'function' && getter() !== undefined;
       });
 
-      if (readyApps.length === 0) {
-        container.innerHTML = `<div style="grid-column: span 2; text-align: center; color: var(--text-muted); padding: 40px 10px;">🎮 Загрузка каталога...</div>`;
-        return;
-      }
+      document.getElementById("gamesCountBadge").textContent = `${readyApps.length} игр`;
 
       readyApps.forEach(app => {
         const card = document.createElement("div");
-        card.className = "game-card";
-        card.onclick = () => onTileClick(app);
+        card.className = "clean-game-card";
+        card.onclick = () => launchGame(app);
 
         let badgeHtml = "";
         if (app.badge) {
-          const badgeClass = app.badge === "NEW" ? "badge-new" : "badge-plus";
-          badgeHtml = `<span class="card-badge ${badgeClass}">${app.badge}</span>`;
+          badgeHtml = `<span class="card-badge-pill ${app.badge === 'NEW' ? 'badge-new' : 'badge-plus'}">${app.badge}</span>`;
         }
 
         card.innerHTML = `
-          <div class="card-top">
-            <div class="card-icon">${app.icon}</div>
+          <div class="card-header-line">
+            <span class="card-category-indicator"></span>
             ${badgeHtml}
           </div>
-          <div class="card-title">${app.title}</div>
-          <div class="card-desc">${app.description}</div>
-          <div class="card-footer">
-            <span>⚡️ 1 раунд ~ 1 мин</span>
-            <span class="play-action">Играть ›</span>
+          <div class="card-content-wrap">
+            <h4 class="card-title-text">${app.title}</h4>
+            <p class="card-subtext">${app.description || 'Аркадный раунд'}</p>
+          </div>
+          <div class="card-action-bar">
+            <span>Раунд ~1 мин</span>
+            <span class="card-arrow">→</span>
           </div>
         `;
         container.appendChild(card);
       });
     }
 
-    function filterTiles(category) {
-      window.snd.playClick();
-      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-      event.target.classList.add("active");
-
-      if (category === "all") renderTiles(currentApps);
-      else if (category === "new") renderTiles(currentApps.filter(a => a.badge === "NEW"));
-      else if (category === "plus") renderTiles(currentApps.filter(a => a.status === "plus_only" || a.badge === "PLUS"));
-      else if (category === "favorites") renderTiles(currentApps.slice(0, 2));
-    }
-
-
-    let activeApp = null;
-
-    function openPauseModal() {
+    function filterCategory(cat, btn) {
       if (window.snd) window.snd.playClick();
-      window.sessionMgr.pauseHeartbeat();
-      if (activeGameObject && activeGameObject.pause) activeGameObject.pause();
-      document.getElementById("pauseModal").classList.add("open");
+      document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+
+      if (cat === 'all') {
+        renderCleanTiles(currentApps);
+      } else if (cat === 'arcade') {
+        renderCleanTiles(currentApps.filter(a => ['bounce_breaker', 'gravity_jump'].includes(a.app_id)));
+      } else if (cat === 'reaction') {
+        renderCleanTiles(currentApps.filter(a => a.app_id.includes('reaction') || a.app_id.includes('tap') || a.app_id.includes('catch') || a.app_id.includes('laser') || a.app_id.includes('tempo')));
+      } else if (cat === 'memory') {
+        renderCleanTiles(currentApps.filter(a => a.app_id.includes('matrix')));
+      }
     }
 
-    function resumeGame() {
-      if (window.snd) window.snd.playClick();
-      document.getElementById("pauseModal").classList.remove("open");
-      window.sessionMgr.resumeHeartbeat();
-      if (activeGameObject && activeGameObject.resume) activeGameObject.resume();
+    function launchFeaturedGame() {
+      const featured = currentApps.find(a => a.app_id === 'bounce_breaker') || currentApps[0];
+      if (featured) launchGame(featured);
     }
 
-    function confirmExitToCatalog() {
-      document.getElementById("pauseModal").classList.remove("open");
-      exitGame();
-    }
-
-    function showResultsOverlay(score, bestScore, coins) {
-      document.getElementById("resultsTitle").textContent = "Раунд завершён!";
-      document.getElementById("resultsScoreInfo").innerHTML = `
-        <div style="font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 6px;">Счёт: ${score}</div>
-        <div style="font-size: 13px; color: var(--text-muted);">Рекорд: ${bestScore || score}</div>
-      `;
-      document.getElementById("resultsModal").classList.add("open");
-    }
-
-    function restartCurrentGame() {
-      document.getElementById("resultsModal").classList.remove("open");
-      if (activeApp) onTileClick(activeApp);
-    }
-
-    function exitFromResults() {
-      document.getElementById("resultsModal").classList.remove("open");
-      exitGame();
-    }
-
-    async function onTileClick(app) {
+    async function launchGame(app) {
       activeApp = app;
-      window.snd.playClick();
+      if (window.snd) window.snd.playClick();
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+      }
+
       const ok = await window.sessionMgr.start(app.app_id, (err) => {
         showPaywall(err);
-        exitGame();
+        exitGameSafely();
       });
 
       if (ok) {
         document.getElementById("viewCatalog").style.display = "none";
         document.getElementById("viewProfile").style.display = "none";
-        document.getElementById("viewGame").style.display = "block";
-        document.getElementById("activeGameTitle").textContent = `${app.icon} ${app.title}`;
+        document.querySelector(".bottom-dock-nav").style.display = "none";
+        document.querySelector(".app-header").style.display = "none";
 
+        const gameView = document.getElementById("viewGame");
+        gameView.style.display = "flex";
+        document.getElementById("activeGameTitle").textContent = app.title;
+
+        // Show native Telegram BackButton
         if (window.Telegram?.WebApp?.BackButton) {
           window.Telegram.WebApp.BackButton.show();
-          window.Telegram.WebApp.BackButton.onClick(openPauseModal);
         }
-        
-        const wrapper = document.getElementById("gameCanvasWrapper");
-        if (activeGameObject) activeGameObject.destroy();
 
+        const wrapper = document.getElementById("gameCanvasWrapper");
+        if (activeGameObject && activeGameObject.destroy) {
+          activeGameObject.destroy();
+        }
         activeGameObject = window.GameRegistry.create(app.app_id, wrapper);
       }
     }
 
-    async function exitGame() {
-      window.snd.playClick();
+    async function exitGameSafely() {
+      if (window.snd) window.snd.playClick();
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+      }
+
+      // Hide Telegram BackButton
       if (window.Telegram?.WebApp?.BackButton) {
         window.Telegram.WebApp.BackButton.hide();
-        window.Telegram.WebApp.BackButton.offClick(openPauseModal);
       }
-      if (activeGameObject) {
+
+      if (activeGameObject && activeGameObject.destroy) {
         activeGameObject.destroy();
         activeGameObject = null;
       }
+
       await window.sessionMgr.stop();
+
       document.getElementById("viewGame").style.display = "none";
-      switchTab("catalog");
-      await loadProfile();
+      document.getElementById("pauseModal").classList.remove("open");
+      document.getElementById("resultsModal").classList.remove("open");
+
+      document.querySelector(".bottom-dock-nav").style.display = "flex";
+      document.querySelector(".app-header").style.display = "flex";
+      switchTab('catalog');
     }
 
-    function updateMinutesDisplay(minutes) {
-      if (!minutes) return;
-      const val = minutes.is_plus ? "Plus ∞" : `${minutes.remaining_minutes} мин`;
-      
-      const badge = document.getElementById("minutesBadge");
-      const textElem = document.getElementById("minutesText");
-      if (textElem) textElem.textContent = `⏳ ${val}`;
-      else if (badge) badge.textContent = `⏳ ${val}`;
+    function togglePauseGame() {
+      if (window.snd) window.snd.playClick();
+      window.sessionMgr.pause();
+      if (activeGameObject && activeGameObject.pause) activeGameObject.pause();
+      document.getElementById("pauseModal").classList.add("open");
+    }
 
-      const hudMin = document.getElementById("hudMinutesVal");
-      if (hudMin) hudMin.textContent = val;
+    function resumeGameSafely() {
+      if (window.snd) window.snd.playClick();
+      document.getElementById("pauseModal").classList.remove("open");
+      window.sessionMgr.resume();
+      if (activeGameObject && activeGameObject.resume) activeGameObject.resume();
+    }
 
-      const hudPill = document.getElementById("gameHudMinutes");
-      if (!minutes.is_plus && minutes.remaining_minutes <= 1.0) {
-        if (badge) badge.classList.add("pulse");
-        if (hudPill) hudPill.classList.add("pulse");
-      } else {
-        if (badge) badge.classList.remove("pulse");
-        if (hudPill) hudPill.classList.remove("pulse");
-      }
+    function exitGameFromPause() {
+      exitGameSafely();
+    }
 
-      const statRemaining = document.getElementById("statRemainingMin");
-      if (statRemaining) statRemaining.textContent = val;
+    function restartCurrentGame() {
+      document.getElementById("resultsModal").classList.remove("open");
+      if (activeApp) launchGame(activeApp);
+    }
 
-      if (minutes.breakdown) {
-        const breakdownElem = document.getElementById("minutesBreakdown");
-        if (breakdownElem) {
-          breakdownElem.innerHTML = `
-            • Free база: ${minutes.breakdown.free_minutes} мин<br>
-            • Серия дней: +${minutes.breakdown.streak_minutes || 0} мин<br>
-            • Рефералы: +${minutes.breakdown.referral_minutes} мин<br>
-            • Реклама: +${minutes.breakdown.ad_minutes} мин (макс 10)<br>
-            • Пакеты: +${minutes.breakdown.pack_minutes} мин<br>
-            • Дневной потолок: ${minutes.breakdown.daily_cap_minutes} мин
-          `;
+    function exitFromResults() {
+      document.getElementById("resultsModal").classList.remove("open");
+      exitGameSafely();
+    }
+
+    function switchTab(tab) {
+      if (window.snd) window.snd.playClick();
+      currentTab = tab;
+
+      document.getElementById("dockCatalog").classList.toggle("active", tab === 'catalog');
+      document.getElementById("dockProfile").classList.toggle("active", tab === 'profile');
+
+      document.getElementById("viewCatalog").style.display = tab === 'catalog' ? 'block' : 'none';
+      document.getElementById("viewProfile").style.display = tab === 'profile' ? 'block' : 'none';
+
+      if (window.Telegram?.WebApp?.BackButton) {
+        if (tab !== 'catalog') {
+          window.Telegram.WebApp.BackButton.show();
+        } else {
+          window.Telegram.WebApp.BackButton.hide();
         }
       }
     }
 
-    function switchTab(tab) {
-      window.snd.playClick();
-      document.getElementById("navCatalog").classList.toggle("active", tab === "catalog");
-      document.getElementById("navProfile").classList.toggle("active", tab === "profile");
-      document.getElementById("viewCatalog").style.display = tab === "catalog" ? "block" : "none";
-      document.getElementById("viewProfile").style.display = tab === "profile" ? "block" : "none";
-      if (tab === "profile") loadProfile();
+    async function loadProfile() {
+      try {
+        const prof = await window.api.getProfile();
+        currentProfile = prof;
+        document.getElementById("userNameText").textContent = prof.user.first_name || "Player";
+        document.getElementById("userAvatarWrap").textContent = (prof.user.first_name || "P")[0].toUpperCase();
+        document.getElementById("userTierText").textContent = prof.user.status === 'plus' ? 'Plus Member' : 'Free Tier';
+        
+        const remMin = prof.minutes.is_plus ? 'Plus ∞' : `${prof.minutes.remaining_minutes} min`;
+        document.getElementById("minutesValText").textContent = remMin;
+        document.getElementById("profBalanceVal").textContent = remMin;
+        document.getElementById("profStreakVal").textContent = `${prof.minutes.streak_days || 1} день`;
+      } catch (e) {}
     }
 
     function showPaywall(reason) {
-      window.snd.playError();
-      if (reason) document.getElementById("paywallReason").textContent = reason;
+      if (reason) document.getElementById("paywallSubText").textContent = reason;
       document.getElementById("paywallModal").classList.add("open");
     }
 
     function closePaywall() {
-      window.snd.playClick();
+      if (window.snd) window.snd.playClick();
       document.getElementById("paywallModal").classList.remove("open");
     }
 
-    async function buyProduct(prod) {
-      window.snd.playSuccess();
-      const res = await window.api.buyStarsProduct(prod);
-      alert(res.message || "Покупка успешно оформлена!");
+    async function buyPlan(key) {
+      if (window.snd) window.snd.playClick();
+      const res = await window.api.buyStarsProduct(key);
+      alert(res.message || "Инвойс Stars сформирован");
       closePaywall();
       await loadProfile();
-      await loadApps();
     }
 
-    async function watchAdReward() {
-      const res = await window.api.claimAdReward();
-      if (res.message) {
-        window.snd.playSuccess();
-        alert(res.message);
-        await loadProfile();
-      } else {
-        alert(res.error || "Ошибка начисления бонуса");
-      }
-    }
-
-    function copyReferralLink() {
-      window.snd.playSuccess();
-      if (currentProfile && currentProfile.referrals) {
-        navigator.clipboard.writeText(currentProfile.referrals.referral_link);
-        alert("Реферальная ссылка скопирована в буфер обмена!");
-      }
-    }
-
-    async function checkOfflineMode() {
-      const res = await window.api.requestOfflineToken();
-      if (res.offline_token) {
-        window.snd.playSuccess();
-        alert("Офлайн-токен активен на 48 часов! Офлайн-игра разрешена.");
-      } else {
-        alert(res.detail || "Офлайн доступен только по подписке Plus.");
-      }
-    }
-
-    function openSupport() {
-      alert("Служба поддержки: @minigame2_bot");
-    }
-
-    function deleteAccount() {
-      if (confirm("Вы уверены, что хотите удалить свой аккаунт платформы?")) {
-        alert("Запрос на удаление аккаунта отправлен.");
-      }
+    function copyRefLink() {
+      if (window.snd) window.snd.playClick();
+      const link = currentProfile?.referrals?.referral_link || "https://t.me/minigame2_bot";
+      navigator.clipboard.writeText(link);
+      alert("Ссылка приглашения скопирована в буфер обмена.");
     }
 
     window.onload = initPlatform;
   </script>
-
-  <!-- Pause Modal Overlay -->
-  <div id="pauseModal" class="modal-overlay">
-    <div class="modal-sheet">
-      <div style="font-size: 36px; margin-bottom: 8px;">⏸</div>
-      <h3 class="modal-title">Игра на паузе</h3>
-      <p class="modal-desc">Минуты не расходуются, пока игра находится на паузе.</p>
-      <button class="btn-primary" onclick="resumeGame()">▶️ Продолжить</button>
-      <button class="btn-secondary" onclick="confirmExitToCatalog()">🚪 Выйти в каталог</button>
-    </div>
-  </div>
-
-  <!-- Unified Results Overlay -->
-  <div id="resultsModal" class="modal-overlay">
-    <div class="modal-sheet">
-      <div style="font-size: 40px; margin-bottom: 8px;">🏆</div>
-      <h3 class="modal-title" id="resultsTitle">Игра завершена!</h3>
-      <p class="modal-desc" id="resultsScoreInfo">Счёт: 0</p>
-      <button class="btn-primary" onclick="restartCurrentGame()">🔄 Сыграть снова</button>
-      <button class="btn-secondary" onclick="exitFromResults()">🎮 В каталог</button>
-    </div>
-  </div>
-
 </body>
 </html>
