@@ -58,15 +58,54 @@ class PlatformAPI {
   }
 
   async getProfile() {
-    const res = await this.fetchWithAuth(`${API_BASE}/me`);
-    if (!res.ok) throw new Error("Не удалось загрузить профиль");
-    return res.json();
+    try {
+      const res = await this.fetchWithAuth(`${API_BASE}/me`);
+      if (res && res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn("Backend /me unreachable, using default player profile:", e);
+    }
+    // Fallback profile
+    const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+    return {
+      user: {
+        user_id: tgUser?.id || 1001,
+        first_name: tgUser?.first_name || "Игрок",
+        status: "free"
+      },
+      minutes: {
+        total_remaining: 10.0,
+        remaining_minutes: 10.0,
+        is_plus: false,
+        streak_days: 1,
+        breakdown: {
+          free_minutes: 10.0,
+          streak_minutes: 0,
+          referral_minutes: 0
+        }
+      },
+      referrals: {
+        verified_friends: 0,
+        referral_link: "https://t.me/minigame2_bot?start=" + (tgUser?.id || "ref")
+      }
+    };
   }
 
   async getApps() {
-    const res = await this.fetchWithAuth(`${API_BASE}/apps`);
-    if (!res.ok) throw new Error("Не удалось загрузить список игр");
-    return res.json();
+    try {
+      const res = await this.fetchWithAuth(`${API_BASE}/apps`);
+      if (res && res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn("Backend /apps unreachable, using client catalogue fallback:", e);
+    }
+    // Fallback to static catalogue when running on GitHub Pages
+    if (window.DEFAULT_APPS && window.DEFAULT_APPS.length > 0) {
+      return { apps: window.DEFAULT_APPS };
+    }
+    return { apps: [] };
   }
 
   async startSession(appId) {
