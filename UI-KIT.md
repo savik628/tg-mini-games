@@ -1,31 +1,39 @@
 # UI-Kit и дизайн-система платформы «Мини игры» (UI-KIT.md)
 
-Версия: 1.0  
+Версия: 1.1  
 Целевая аудитория: UI/UX дизайнеры, верстальщики, фронтенд-разработчики  
-Согласовано с: [RULES.md (Разделы 11, 16)](file:///Users/savelijkoselev/Library/CloudStorage/GoogleDrive-savelii.k28@gmail.com/Мой%20диск/2026-2027/PET/tg_mini_apps/RULES.md) и [webapp/css/style.css](file:///Users/savelijkoselev/Library/CloudStorage/GoogleDrive-savelii.k28@gmail.com/Мой%20диск/2026-2027/PET/tg_mini_apps/webapp/css/style.css)
+Согласовано с: [RULES.md](file:///Users/savelijkoselev/Library/CloudStorage/GoogleDrive-savelii.k28@gmail.com/Мой%20диск/2026-2027/PET/tg_mini_apps/RULES.md), [GAMES.md](file:///Users/savelijkoselev/Library/CloudStorage/GoogleDrive-savelii.k28@gmail.com/Мой%20диск/2026-2027/PET/tg_mini_apps/GAMES.md)
 
 ---
 
-## 1. Цветовая палитра и дизайн-токены
+## 1. Концепция и визуальный фундамент (Dark Slate Native)
 
-Дизайн-система платформы поддерживает две цветовые схемы: базовую темную тему (Dark Mode по умолчанию) и адаптивную интеграцию с цветовой палитрой Telegram WebApp (`--tg-theme-*`).
+Визуальная концепция платформы базируется на строгом **Telegram-native / Dark Slate** стиле:
+- **Глубокий стеклянный фон**: `#0f172a` с карточками `#1e293b` и границами `#334155`.
+- **Неоновый небесный акцент (Sky)**: `#38bdf8` для интерактивных элементов, кнопок первого порядка и активных табов.
+- **Премиальный золотой акцент (Amber/Stars)**: `#f59e0b` для Telegram Stars, бейджей Plus и подписки.
+- **Telegram Theme Adaptivity**: автоматическое считывание цветовой схемы пользователя из `window.Telegram.WebApp.themeParams`.
 
-### CSS-переменные базовой темы
-| Токен | Значение HEX | Назначение |
-| :--- | :--- | :--- |
-| `--bg-color` | `#0f172a` (Slate 900) | Основной фон страницы и приложения |
-| `--card-bg` | `#1e293b` (Slate 800) | Фон карточек, плиток игр, всплывающих окон |
-| `--card-border` | `#334155` (Slate 700) | Границы карточек, разделители, обводки инпутов |
-| `--text-main` | `#f8fafc` (Slate 50) | Заголовки, первичный контрастный текст |
-| `--text-muted` | `#94a3b8` (Slate 400) | Второстепенные подписи, лейблы, метаданные |
-| `--primary` | `#38bdf8` (Sky 400) | Акцентный фирменный цвет, основные кнопки, активные ссылки |
-| `--primary-hover`| `#0284c7` (Sky 600) | Состояние наведения/нажатия на primary кнопки |
-| `--accent` | `#f59e0b` (Amber 500) | Бейджи Plus-подписки, звезды Stars, спец-предложения |
-| `--success` | `#10b981` (Emerald 500)| Успешные операции, подтвержденные рефералы |
-| `--danger` | `#ef4444` (Red 500) | Ошибки, предупреждения об исчерпании лимита, удаление |
-
-### Интеграция с Telegram Theme
+### CSS-токены
 ```css
+:root {
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --bg-color: #0f172a;
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary: #38bdf8;
+  --primary-hover: #0284c7;
+  --accent: #f59e0b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --safe-bottom: env(safe-area-inset-bottom, 16px);
+}
+
 body.tg-theme {
   --bg-color: var(--tg-theme-bg-color, #0f172a);
   --text-main: var(--tg-theme-text-color, #f8fafc);
@@ -36,84 +44,57 @@ body.tg-theme {
 
 ---
 
-## 2. Типографика
+## 2. Системные компоненты платформы поверх игр
 
-Используется системный нативный шрифт мобильных платформ (San Francisco на iOS, Roboto на Android) для обеспечения максимальной скорости рендеринга и органичного вида в Telegram.
+### 2.1. Игровая шапка (Game Header HUD)
+Закрепленная панель поверх игрового поля:
+- Высота: `48px`, полупрозрачный фон `rgba(15, 23, 42, 0.75)` с `backdrop-filter: blur(12px)`.
+- **Слева**: Название запущенной игры (Typography H2).
+- **Справа**:
+  - **Индикатор минут**: плашка с таймером (например, `⏱ 08:45`). При времени ≤ 60 сек активируется класс `.pulsing-warning` с анимацией пульсации красным цветом.
+  - **Кнопка паузы**: иконка паузы (открывает системное модальное окно паузы).
+  - **Кнопка звука**: переключатель звуковых эффектов.
 
+### 2.2. Модальное окно паузы (при клике на Telegram BackButton или Pause)
+- Выезжающее или центрированное модальное окно с затемнением `rgba(0, 0, 0, 0.6)`.
+- Заголовок: «Игра на паузе».
+- Подпись: «Списание минут приостановлено. Ваш прогресс сохранен.»
+- Кнопки:
+  - `btn-primary`: «Продолжить игру»
+  - `btn-secondary`: «Выйти в главное меню»
+
+### 2.3. Унифицированный оверлей результатов (Game Over Overlay)
+- Полноэкранный оверлей с плавным появлением (`fade-in`, 0.25s).
+- Карточка результатов (`--card-bg` с обводкой `--card-border`):
+  - Значок кубка или медали (при новом рекорде).
+  - Блок счета: крупная цифра очков (32px, `font-weight: 800`).
+  - Статистика матча: собранные монеты, пройденная дистанция, поверженные противники.
+  - Состояние лимита минут: остаток на сегодня.
+  - Кнопка «Сыграть снова» (при наличии минут) либо «Разблокировать безлимит Plus».
+  - Кнопка «В каталог игр».
+
+### 2.4. Состояние «Предупреждение T-60s» (Pulse Warning)
 ```css
---font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+@keyframes warning-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 10px 4px rgba(239, 68, 68, 0.6); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.minutes-badge.warning {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: rgba(239, 68, 68, 0.15);
+  animation: warning-pulse 1.2s infinite;
+}
 ```
 
-### Шкала размеров текста:
-- **Title H1 (Заголовок экрана)**: `20px` (1.25rem), `font-weight: 700`, `line-height: 1.2`
-- **Title H2 (Секции / Карточки)**: `16px` (1.0rem), `font-weight: 600`, `line-height: 1.3`
-- **Body Regular (Основной текст)**: `14px` (0.875rem), `font-weight: 400`, `line-height: 1.5`
-- **Body Medium (Акцентный текст)**: `14px` (0.875rem), `font-weight: 500`
-- **Caption / Badge (Подписи, бейджи)**: `12px` (0.75rem), `font-weight: 600`, `text-transform: uppercase` (для бейджей)
-
 ---
 
-## 3. Сетки, отступы и радиусы скругления
+## 3. Типографика, кнопки и формы
 
-- **Базовый шаг отступов**: кратен 4px / 8px (4px, 8px, 12px, 16px, 20px, 24px).
-- **Safe Area Insets**: обязательный учет нижней и верхней безопасной зоны мобильных устройств:
-  ```css
-  --safe-bottom: env(safe-area-inset-bottom, 16px);
-  padding-bottom: calc(70px + var(--safe-bottom));
-  ```
-- **Сетка плиток главного экрана (Grid)**:
-  - Смартфоны: `repeat(2, 1fr)`, промежуток `gap: 12px`.
-  - Планшеты и Desktop: `repeat(auto-fill, minmax(180px, 1fr))`, промежуток `gap: 16px`.
-- **Радиусы скругления (Border Radius)**:
-  - `--radius-sm`: `8px` (бейджи, мелкие теги, инпуты)
-  - `--radius-md`: `14px` (кнопки, карточки списков)
-  - `--radius-lg`: `20px` (плитки игр, модальные окна, нижний navigation bar)
-
----
-
-## 4. Базовые компоненты интерфейса
-
-### 4.1. Кнопки (Buttons)
-1. **Primary Button** (`.btn-primary`):
-   - Фон `--primary`, текст темный или контрастный белый, `border-radius: var(--radius-md)`.
-   - Высота: `44px`–`48px` (комфортная зона нажатия под палец по гайдлайнам Apple/Google).
-2. **Secondary / Outline Button** (`.btn-secondary`):
-   - Прозрачный фон, граница `1px solid var(--card-border)`, текст `--text-main`.
-3. **Accent / Stars Button** (`.btn-stars`):
-   - Градиент с использованием `--accent`, акцент на Telegram Stars покупках.
-4. **Состояния кнопок**:
-   - `Default`: полная непрозрачность.
-   - `Active / Tap`: `transform: scale(0.97)`, подсветка `--primary-hover`.
-   - `Disabled`: `opacity: 0.5`, `pointer-events: none`.
-   - `Loading`: отображение встроенного спиннера вместо текста.
-
-### 4.2. Плитка игры (Game Card)
-- Контейнер со скруглением `--radius-lg`, фон `--card-bg`, легкая обводка `1px solid var(--card-border)`.
-- Содержит:
-  - Анимированную/статичную иконку (56x56px или 64x64px).
-  - Название игры (H2).
-  - Статус доступности (например, «10 мин сегодня» или «Plus»).
-  - Бейдж в верхнем правом углу (`NEW`, `PLUS`, `LOCKED`).
-- Интерактивность: легкое пружинящее уменьшение при тапе.
-
-### 4.3. Бейджи (Badges & Pills)
-- `NEW`: цвет фона `rgba(56, 189, 248, 0.15)`, текст `--primary`.
-- `PLUS`: цвет фона `rgba(245, 158, 11, 0.15)`, текст `--accent`.
-- `LOCKED`: цвет фона `rgba(239, 68, 68, 0.15)`, текст `--danger`.
-
-### 4.4. Индикатор баланса минут (Minutes Counter)
-- Закреплен в шапке (Header) или плавающей панели.
-- Отображает оставшиеся минуты, иконку таймера и значок тарифа (Free / Plus).
-
-### 4.5. Модальные окна и Bottom Sheets (Paywall)
-- Плавный выезд снизу с затемнением оверлея (`backdrop-filter: blur(8px)`).
-- Скругление верхних углов: `20px 20px 0 0`.
-- Закрытие свайпом вниз или тапом на крестик в правом верхнем углу.
-
----
-
-## 5. Анимации и микровзаимодействия
-
-- Плавные переходы экранов: `transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)`.
-- Скелетон-загрузчики (Shimmer Effect): пульсирующий градиент для загружающихся плиток игр и карточек профиля.
-- Обязательная поддержка нативного Telegram Taptic Engine при тапах на кнопки, получении наград и переключении вкладок.
+- **H1 (Заголовки экранов)**: 20px, bold, интерлиньяж 1.2.
+- **H2 (Секции и карточки)**: 16px, semibold.
+- **Body**: 14px, regular (400) / medium (500).
+- **Кнопки**: высота 48px, радиус скругления `var(--radius-md)` (14px).
+  - Нажатие сопровождается скейлом: `transform: scale(0.97)` и нативным Taptic Engine откликом.
