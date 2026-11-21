@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Arcade Platform</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="./css/style.css?v=2.0">
+  <link rel="stylesheet" href="./css/style.css?v=3.0">
 </head>
 <body>
 
@@ -15,30 +15,33 @@
       <div class="user-badge" onclick="switchTab('profile')">
         <div id="userAvatarWrap" class="user-avatar-wrap">U</div>
         <div class="user-info">
-          <span id="userNameText" class="user-name">Player</span>
-          <span id="userTierText" class="user-status">Free Tier</span>
+          <span id="userNameText" class="user-name">Игрок</span>
+          <span id="userTierText" class="user-status">Free</span>
         </div>
       </div>
     </div>
     <div class="header-right">
-      <div id="minutesPill" class="pill-stat" onclick="showPaywall('Продление доступа к аркадам')">
-        <span class="dot-indicator"></span>
-        <span id="minutesValText">10.0 min</span>
+      <div id="minutesPill" class="pill-stat" onclick="switchTab('store')">
+        <span id="headerDotIndicator" class="dot-indicator"></span>
+        <span id="minutesValText">10.0 мин</span>
       </div>
     </div>
   </header>
 
-  <!-- View 1: Arcade Lobby (Каталог) -->
+  <!-- VIEW 1: LOBBY & SHOWCASE (Каталог) -->
   <main id="viewCatalog" class="view-container">
     
-    <!-- Hero Banner (Featured Game) -->
+    <!-- Hero Showcase (Featured Game) -->
     <div class="hero-card" onclick="launchFeaturedGame()">
-      <span class="hero-tag">Featured</span>
+      <div class="hero-tag-row">
+        <span class="hero-tag">Игра дня</span>
+        <span class="hero-stats">Аркада • Топ 1</span>
+      </div>
       <h2 class="hero-title">Неоновый арканоид</h2>
-      <p class="hero-desc">Прецизионная физика отражения, цепные разрушения и кинестетический отклик.</p>
+      <p class="hero-desc">Прецизионная физика рикошета, цепные разрушения неоновых блоков и кинестетический отклик.</p>
       <button class="hero-action-btn">
         <span>Играть</span>
-        <span style="font-weight: 700;">→</span>
+        <span style="font-size: 14px;">→</span>
       </button>
     </div>
 
@@ -51,49 +54,148 @@
     </div>
 
     <!-- Section Heading -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <h3 class="section-title" id="catalogueHeading">Каталог</h3>
-      <span id="gamesCountBadge" style="font-size: 11px; color: var(--text-tertiary); font-weight: 600;">9 игр</span>
+    <div class="section-header-row">
+      <h3 class="section-title">Каталог</h3>
+      <span id="gamesCountBadge" style="font-size: 11px; color: var(--text-tertiary); font-weight: 700;">9 игр</span>
     </div>
 
-    <!-- Clean Cards Grid -->
+    <!-- Clean High-Density Cards Grid -->
     <div id="tilesGrid" class="games-grid"></div>
   </main>
 
-  <!-- View 2: Profile & Stats -->
-  <main id="viewProfile" class="view-container" style="display: none;">
-    <h3 class="section-title" style="font-size: 20px; margin-bottom: 16px;">Профиль игрока</h3>
-
-    <div class="profile-stat-box">
-      <div>
-        <div style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase;">Игровой баланс</div>
-        <div id="profBalanceVal" style="font-size: 18px; font-weight: 700; color: #fff; margin-top: 2px;">10.0 минут</div>
-      </div>
-      <button class="btn-primary" style="width: auto; padding: 8px 14px;" onclick="showPaywall('Пополнение баланса')">Пополнить</button>
+  <!-- VIEW 2: STORE (Полноценная витрина подписки и Stars) -->
+  <main id="viewStore" class="view-container" style="display: none;">
+    <div class="store-hero">
+      <h2 class="store-hero-title">Подписка Plus</h2>
+      <p class="store-hero-subtitle">Играйте без ограничений по времени и откройте доступ ко всем эксклюзивам платформы.</p>
     </div>
 
-    <div class="profile-stat-box">
+    <!-- Plans Cards -->
+    <div class="plan-card featured" onclick="buyPlan('plus_30d')">
+      <span class="plan-badge">Хит продаж</span>
       <div>
-        <div style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase;">Серия активности</div>
-        <div id="profStreakVal" style="font-size: 16px; font-weight: 600; color: #fff; margin-top: 2px;">1 день</div>
+        <h4 class="plan-title">Plus на 30 дней</h4>
+        <p class="plan-desc">Безлимитный доступ без таймеров</p>
       </div>
-      <span style="font-size: 12px; color: var(--accent-cyan); font-weight: 600;">+1 мин/день</span>
+      <div class="plan-price-wrap">
+        <span class="plan-price-stars">199 Stars</span>
+        <div class="plan-price-sub">Ежемесячно</div>
+      </div>
     </div>
 
-    <div class="profile-stat-box" style="flex-direction: column; align-items: flex-start; gap: 10px;">
-      <div style="font-size: 11px; color: var(--text-tertiary); text-transform: uppercase;">Партнерская программа</div>
-      <div style="font-size: 13px; color: var(--text-secondary);">Приглашайте друзей и получайте до +10 минут ежедневно.</div>
-      <button class="btn-secondary" onclick="copyRefLink()">Скопировать ссылку приглашения</button>
+    <div class="plan-card" onclick="buyPlan('plus_180d')">
+      <span class="plan-badge" style="background: var(--accent-gold); box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);">Выгода 40%</span>
+      <div>
+        <h4 class="plan-title">Plus на 180 дней</h4>
+        <p class="plan-desc">Полгода безлимитных сессий</p>
+      </div>
+      <div class="plan-price-wrap">
+        <span class="plan-price-stars">999 Stars</span>
+        <div class="plan-price-sub">За 6 месяцев</div>
+      </div>
+    </div>
+
+    <div style="font-size: 13px; font-weight: 700; color: #fff; margin: 24px 0 12px 0;">Пакеты минут</div>
+
+    <div class="plan-card" onclick="buyPlan('pack_120m')">
+      <div>
+        <h4 class="plan-title">+120 минут</h4>
+        <p class="plan-desc">Срок действия 7 дней</p>
+      </div>
+      <div class="plan-price-wrap">
+        <span class="plan-price-stars">79 Stars</span>
+      </div>
+    </div>
+
+    <div class="plan-card" onclick="buyPlan('pack_30m')">
+      <div>
+        <h4 class="plan-title">+30 минут</h4>
+        <p class="plan-desc">Срок действия 7 дней</p>
+      </div>
+      <div class="plan-price-wrap">
+        <span class="plan-price-stars">25 Stars</span>
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="comparison-box">
+      <div style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 8px;">Сравнение возможностей</div>
+      <div class="comp-row">
+        <span class="comp-label">Ежедневный лимит</span>
+        <span class="comp-val-free">10 минут</span>
+        <span class="comp-val-plus">Безлимит ∞</span>
+      </div>
+      <div class="comp-row">
+        <span class="comp-label">Доступ к каталогу</span>
+        <span class="comp-val-free">Базовый</span>
+        <span class="comp-val-plus">Все 30 игр</span>
+      </div>
+      <div class="comp-row">
+        <span class="comp-label">Офлайн-игра</span>
+        <span class="comp-val-free">Нет</span>
+        <span class="comp-val-plus">До 48 часов</span>
+      </div>
     </div>
   </main>
 
-  <!-- Bottom Minimalist Dock -->
+  <!-- VIEW 3: PROFILE (Кабинет игрока) -->
+  <main id="viewProfile" class="view-container" style="display: none;">
+    <div class="profile-card-header">
+      <div id="profAvatarBig" class="profile-avatar-large">U</div>
+      <div>
+        <h3 id="profNameTitle" style="font-size: 17px; font-weight: 800; color: #fff;">Игрок</h3>
+        <span id="profStatusLabel" style="font-size: 12px; font-weight: 600; color: var(--accent-cyan);">Free Tier</span>
+      </div>
+    </div>
+
+    <div class="stats-grid-row">
+      <div class="stat-tile">
+        <span class="stat-tile-label">Баланс минут</span>
+        <span id="profMinutesCount" class="stat-tile-val">10.0</span>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-tile-label">Серия дней</span>
+        <span id="profStreakDays" class="stat-tile-val">1 день</span>
+      </div>
+    </div>
+
+    <!-- 7 Days Streak Calendar -->
+    <div class="streak-calendar">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 13px; font-weight: 700; color: #fff;">Ежедневная серия заходов</span>
+        <span style="font-size: 11px; font-weight: 600; color: var(--accent-emerald);">+1 мин/день</span>
+      </div>
+      <div class="streak-days-row">
+        <div class="day-circle completed">1</div>
+        <div class="day-circle active-today">2</div>
+        <div class="day-circle">3</div>
+        <div class="day-circle">4</div>
+        <div class="day-circle">5</div>
+        <div class="day-circle">6</div>
+        <div class="day-circle">7</div>
+      </div>
+    </div>
+
+    <!-- Referral Card with Native Sharing -->
+    <div class="plan-card" style="flex-direction: column; align-items: stretch; gap: 12px; cursor: default;">
+      <div>
+        <h4 class="plan-title">Пригласить друзей</h4>
+        <p class="plan-desc">Получайте +2 минуты за каждого активного друга каждый день.</p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-primary" onclick="shareRefTelegram()">Отправить в Telegram</button>
+        <button class="btn-secondary" style="width: auto; padding: 13px 16px;" onclick="copyRefLink()" title="Скопировать ссылку">Копировать</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- BOTTOM DOCK NAVIGATION -->
   <nav class="bottom-dock-nav">
     <button id="dockCatalog" class="dock-tab active" onclick="switchTab('catalog')">
       <span class="dock-label">Каталог</span>
       <span class="dock-dot"></span>
     </button>
-    <button id="dockStore" class="dock-tab" onclick="showPaywall('Магазин подписки')">
+    <button id="dockStore" class="dock-tab" onclick="switchTab('store')">
       <span class="dock-label">Магазин</span>
       <span class="dock-dot"></span>
     </button>
@@ -103,10 +205,10 @@
     </button>
   </nav>
 
-  <!-- Seamless Game Player Screen -->
+  <!-- SEAMLESS FULLSCREEN GAME PLAYER -->
   <main id="viewGame" style="display: none;">
     <div class="in-game-top-bar">
-      <div style="display: flex; align-items: center; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
         <button class="game-icon-btn" onclick="exitGameSafely()" title="Назад">✕</button>
         <span id="activeGameTitle" class="in-game-title">Игра</span>
       </div>
@@ -119,43 +221,27 @@
     </div>
   </main>
 
-  <!-- Modal: Pause -->
+  <!-- MODAL: PAUSE -->
   <div id="pauseModal" class="modal-overlay">
     <div class="modal-card">
       <h3 class="modal-title-text">Пауза</h3>
-      <p class="modal-desc-text">Сессия приостановлена. Минуты баланса не расходуются.</p>
+      <p class="modal-desc-text">Сессия приостановлена. Время баланса не расходуется.</p>
       <button class="btn-primary" onclick="resumeGameSafely()">Продолжить</button>
-      <button class="btn-secondary" onclick="exitGameFromPause()">Выйти в каталог</button>
+      <button class="btn-secondary" onclick="exitGameSafely()">Выйти в каталог</button>
     </div>
   </div>
 
-  <!-- Modal: Paywall / Store -->
-  <div id="paywallModal" class="modal-overlay">
-    <div class="modal-card">
-      <h3 class="modal-title-text">Подписка Plus</h3>
-      <p id="paywallSubText" class="modal-desc-text">Неограниченное игровое время и доступ ко всем аркадам.</p>
-      
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        <button class="btn-primary" onclick="buyPlan('plus_30d')">Plus на 30 дней — 199 Stars</button>
-        <button class="btn-secondary" onclick="buyPlan('pack_120m')">Пакет +120 минут — 79 Stars</button>
-        <button class="btn-secondary" onclick="buyPlan('pack_30m')">Пакет +30 минут — 25 Stars</button>
-      </div>
-
-      <button class="btn-secondary" style="border: none; margin-top: 4px;" onclick="closePaywall()">Закрыть</button>
-    </div>
-  </div>
-
-  <!-- Modal: Results -->
+  <!-- MODAL: RESULTS -->
   <div id="resultsModal" class="modal-overlay">
     <div class="modal-card" style="text-align: center;">
       <h3 class="modal-title-text">Раунд завершен</h3>
-      <p id="resultsScoreInfo" style="font-size: 20px; font-weight: 700; color: var(--accent-cyan); margin: 4px 0 12px 0;">0</p>
+      <p id="resultsScoreInfo" style="font-size: 24px; font-weight: 800; color: var(--accent-cyan); margin: 6px 0 14px 0;">0</p>
       <button class="btn-primary" onclick="restartCurrentGame()">Играть снова</button>
       <button class="btn-secondary" onclick="exitFromResults()">В каталог</button>
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- SCRIPTS -->
   <script src="./js/audio.js"></script>
   <script src="./js/apps_data.js"></script>
   <script src="./js/api.js"></script>
@@ -173,20 +259,29 @@
     let activeApp = null;
     let currentTab = 'catalog';
 
-    // Telegram BackButton Lifecycle Controller
+    // Haptic feedback engine
+    function triggerHaptic(type = 'light') {
+      const haptic = window.Telegram?.WebApp?.HapticFeedback;
+      if (!haptic) return;
+      if (type === 'light') haptic.impactOccurred('light');
+      else if (type === 'medium') haptic.impactOccurred('medium');
+      else if (type === 'success') haptic.notificationOccurred('success');
+      else if (type === 'select') haptic.selectionChanged();
+    }
+
+    // Telegram BackButton lifecycle
     function setupTelegramBackButton() {
       const tg = window.Telegram?.WebApp;
-      if (!tg) return;
+      if (!tg || !tg.BackButton) return;
 
-      if (tg.BackButton) {
-        tg.BackButton.onClick(() => {
-          if (document.getElementById("viewGame").style.display === "flex" || document.getElementById("viewGame").style.display === "block") {
-            exitGameSafely();
-          } else if (currentTab !== 'catalog') {
-            switchTab('catalog');
-          }
-        });
-      }
+      tg.BackButton.onClick(() => {
+        const gameView = document.getElementById("viewGame");
+        if (gameView.style.display === "flex" || gameView.style.display === "block") {
+          exitGameSafely();
+        } else if (currentTab !== 'catalog') {
+          switchTab('catalog');
+        }
+      });
     }
 
     async function initPlatform() {
@@ -200,13 +295,13 @@
 
       setupTelegramBackButton();
 
-      // Render catalogue immediately from local list
+      // Immediately render local catalogue
       if (window.DEFAULT_APPS && window.DEFAULT_APPS.length > 0) {
         currentApps = window.DEFAULT_APPS;
         renderCleanTiles(currentApps);
       }
 
-      // Load remote data in background
+      // Synchronize in background
       try { await window.api.authenticate(); } catch (e) {}
       try { await loadProfile(); } catch (e) {}
     }
@@ -225,26 +320,40 @@
 
       readyApps.forEach(app => {
         const card = document.createElement("div");
-        card.className = "clean-game-card";
+        
+        let catClass = 'cat-arcade';
+        let catLabel = 'Аркада';
+        if (app.app_id.includes('reaction') || app.app_id.includes('tap') || app.app_id.includes('catch') || app.app_id.includes('laser') || app.app_id.includes('tempo')) {
+          catClass = 'cat-reaction';
+          catLabel = 'Реакция';
+        } else if (app.app_id.includes('matrix')) {
+          catClass = 'cat-memory';
+          catLabel = 'Память';
+        }
+
+        card.className = `game-card-premium ${catClass}`;
         card.onclick = () => launchGame(app);
 
         let badgeHtml = "";
         if (app.badge) {
-          badgeHtml = `<span class="card-badge-pill ${app.badge === 'NEW' ? 'badge-new' : 'badge-plus'}">${app.badge}</span>`;
+          badgeHtml = `<span class="badge-pill-clean badge-new">${app.badge}</span>`;
         }
 
         card.innerHTML = `
-          <div class="card-header-line">
-            <span class="card-category-indicator"></span>
+          <div class="card-top-line">
+            <div class="card-dot-badge">
+              <span class="card-indicator"></span>
+              <span>${catLabel}</span>
+            </div>
             ${badgeHtml}
           </div>
-          <div class="card-content-wrap">
-            <h4 class="card-title-text">${app.title}</h4>
-            <p class="card-subtext">${app.description || 'Аркадный раунд'}</p>
+          <div>
+            <h4 class="card-title-main">${app.title}</h4>
+            <p class="card-desc-muted">${app.description || 'Аркадный раунд'}</p>
           </div>
-          <div class="card-action-bar">
+          <div class="card-footer-stats">
             <span>Раунд ~1 мин</span>
-            <span class="card-arrow">→</span>
+            <span class="card-arrow-icon">→</span>
           </div>
         `;
         container.appendChild(card);
@@ -252,6 +361,7 @@
     }
 
     function filterCategory(cat, btn) {
+      triggerHaptic('select');
       if (window.snd) window.snd.playClick();
       document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
       if (btn) btn.classList.add("active");
@@ -274,18 +384,17 @@
 
     async function launchGame(app) {
       activeApp = app;
+      triggerHaptic('medium');
       if (window.snd) window.snd.playClick();
-      if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-      }
 
       const ok = await window.sessionMgr.start(app.app_id, (err) => {
-        showPaywall(err);
+        switchTab('store');
         exitGameSafely();
       });
 
       if (ok) {
         document.getElementById("viewCatalog").style.display = "none";
+        document.getElementById("viewStore").style.display = "none";
         document.getElementById("viewProfile").style.display = "none";
         document.querySelector(".bottom-dock-nav").style.display = "none";
         document.querySelector(".app-header").style.display = "none";
@@ -294,7 +403,6 @@
         gameView.style.display = "flex";
         document.getElementById("activeGameTitle").textContent = app.title;
 
-        // Show native Telegram BackButton
         if (window.Telegram?.WebApp?.BackButton) {
           window.Telegram.WebApp.BackButton.show();
         }
@@ -308,13 +416,10 @@
     }
 
     async function exitGameSafely() {
+      triggerHaptic('light');
       if (window.snd) window.snd.playClick();
-      if (window.Telegram?.WebApp?.HapticFeedback) {
-        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-      }
 
-      // Hide Telegram BackButton
-      if (window.Telegram?.WebApp?.BackButton) {
+      if (window.Telegram?.WebApp?.BackButton && currentTab === 'catalog') {
         window.Telegram.WebApp.BackButton.hide();
       }
 
@@ -331,10 +436,11 @@
 
       document.querySelector(".bottom-dock-nav").style.display = "flex";
       document.querySelector(".app-header").style.display = "flex";
-      switchTab('catalog');
+      switchTab(currentTab);
     }
 
     function togglePauseGame() {
+      triggerHaptic('light');
       if (window.snd) window.snd.playClick();
       window.sessionMgr.pause();
       if (activeGameObject && activeGameObject.pause) activeGameObject.pause();
@@ -342,14 +448,11 @@
     }
 
     function resumeGameSafely() {
+      triggerHaptic('light');
       if (window.snd) window.snd.playClick();
       document.getElementById("pauseModal").classList.remove("open");
       window.sessionMgr.resume();
       if (activeGameObject && activeGameObject.resume) activeGameObject.resume();
-    }
-
-    function exitGameFromPause() {
-      exitGameSafely();
     }
 
     function restartCurrentGame() {
@@ -363,14 +466,19 @@
     }
 
     function switchTab(tab) {
+      triggerHaptic('select');
       if (window.snd) window.snd.playClick();
       currentTab = tab;
 
       document.getElementById("dockCatalog").classList.toggle("active", tab === 'catalog');
+      document.getElementById("dockStore").classList.toggle("active", tab === 'store');
       document.getElementById("dockProfile").classList.toggle("active", tab === 'profile');
 
       document.getElementById("viewCatalog").style.display = tab === 'catalog' ? 'block' : 'none';
+      document.getElementById("viewStore").style.display = tab === 'store' ? 'block' : 'none';
       document.getElementById("viewProfile").style.display = tab === 'profile' ? 'block' : 'none';
+
+      window.scrollTo(0, 0);
 
       if (window.Telegram?.WebApp?.BackButton) {
         if (tab !== 'catalog') {
@@ -385,40 +493,60 @@
       try {
         const prof = await window.api.getProfile();
         currentProfile = prof;
-        document.getElementById("userNameText").textContent = prof.user.first_name || "Player";
-        document.getElementById("userAvatarWrap").textContent = (prof.user.first_name || "P")[0].toUpperCase();
-        document.getElementById("userTierText").textContent = prof.user.status === 'plus' ? 'Plus Member' : 'Free Tier';
         
-        const remMin = prof.minutes.is_plus ? 'Plus ∞' : `${prof.minutes.remaining_minutes} min`;
+        const isPlus = prof.user.status === 'plus' || prof.minutes.is_plus;
+        document.getElementById("userNameText").textContent = prof.user.first_name || "Игрок";
+        document.getElementById("profNameTitle").textContent = prof.user.first_name || "Игрок";
+        document.getElementById("userAvatarWrap").textContent = (prof.user.first_name || "И")[0].toUpperCase();
+        document.getElementById("profAvatarBig").textContent = (prof.user.first_name || "И")[0].toUpperCase();
+
+        document.getElementById("userTierText").textContent = isPlus ? 'Plus Member' : 'Free';
+        document.getElementById("profStatusLabel").textContent = isPlus ? 'Plus Member (Безлимит)' : 'Free Tier';
+        
+        const remMin = isPlus ? 'Plus ∞' : `${prof.minutes.remaining_minutes} мин`;
         document.getElementById("minutesValText").textContent = remMin;
-        document.getElementById("profBalanceVal").textContent = remMin;
-        document.getElementById("profStreakVal").textContent = `${prof.minutes.streak_days || 1} день`;
+        document.getElementById("profMinutesCount").textContent = remMin;
+        document.getElementById("profStreakDays").textContent = `${prof.minutes.streak_days || 1} день`;
+
+        const pill = document.getElementById("minutesPill");
+        const dot = document.getElementById("headerDotIndicator");
+        if (isPlus) {
+          pill.classList.add("plus-active");
+          dot.classList.add("plus");
+        } else {
+          pill.classList.remove("plus-active");
+          dot.classList.remove("plus");
+        }
       } catch (e) {}
     }
 
-    function showPaywall(reason) {
-      if (reason) document.getElementById("paywallSubText").textContent = reason;
-      document.getElementById("paywallModal").classList.add("open");
-    }
-
-    function closePaywall() {
-      if (window.snd) window.snd.playClick();
-      document.getElementById("paywallModal").classList.remove("open");
-    }
-
     async function buyPlan(key) {
+      triggerHaptic('medium');
       if (window.snd) window.snd.playClick();
       const res = await window.api.buyStarsProduct(key);
-      alert(res.message || "Инвойс Stars сформирован");
-      closePaywall();
+      if (res.status === 'ok') {
+        triggerHaptic('success');
+      }
       await loadProfile();
     }
 
+    function shareRefTelegram() {
+      triggerHaptic('light');
+      const link = currentProfile?.referrals?.referral_link || "https://t.me/minigame2_bot";
+      const text = encodeURIComponent("Заходи в аркады и играй без рекламы! Вот твоя ссылка:");
+      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(link)}&text=${text}`;
+      if (window.Telegram?.WebApp?.openTelegramLink) {
+        window.Telegram.WebApp.openTelegramLink(shareUrl);
+      } else {
+        window.open(shareUrl, '_blank');
+      }
+    }
+
     function copyRefLink() {
-      if (window.snd) window.snd.playClick();
+      triggerHaptic('success');
       const link = currentProfile?.referrals?.referral_link || "https://t.me/minigame2_bot";
       navigator.clipboard.writeText(link);
-      alert("Ссылка приглашения скопирована в буфер обмена.");
+      alert("Ссылка скопирована в буфер обмена.");
     }
 
     window.onload = initPlatform;
