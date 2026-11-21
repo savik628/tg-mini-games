@@ -24,11 +24,10 @@ class SessionManager {
     const res = await window.api.startSession(appId);
     
     if (res.error) {
-      if (res.require_paywall) {
-        window.showPaywall(res.error);
-      } else {
-        alert(res.error);
+      if (typeof window.switchTab === 'function') {
+        window.switchTab('store');
       }
+      alert(res.error);
       return false;
     }
 

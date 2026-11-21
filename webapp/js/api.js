@@ -126,13 +126,34 @@ class PlatformAPI {
         return await res.json();
       }
     } catch (e) {
-      console.warn("Backend session/start unreachable, starting client offline session:", e);
+      console.warn("Backend session/start unreachable, evaluating offline token & balance policy:", e);
     }
-    // Fallback локальная сессия для игры в Mini App
+
+    // Жесткая проверка баланса и офлайн-доступа (RULES.md п. 8.1 - 8.7)
+    const isLocalPlus = localStorage.getItem("user_is_plus") === "true";
+    let extraMinutes = parseFloat(localStorage.getItem("user_extra_minutes") || "0");
+    const todayKey = "free_min_date_" + new Date().toISOString().slice(0, 10);
+    const usedToday = parseFloat(localStorage.getItem(todayKey) || "0");
+    const freeDailyBase = 10.0;
+    const remainingFree = Math.max(0, freeDailyBase - usedToday);
+    const totalRemaining = remainingFree + extraMinutes;
+
+    // Если нет Plus и суммарный баланс минут исчерпан (<= 0) — жесткая блокировка
+    if (!isLocalPlus && totalRemaining <= 0.05) {
+      return {
+        error: "Лимит игрового времени исчерпан. Пополните баланс в Магазине или дождитесь обновления в 00:00 UTC.",
+        require_paywall: true
+      };
+    }
+
+    // Если пользователь Plus — разрешаем офлайн-сессию
+    // Если Free — разрешаем играть только в пределах оставшихся минут
     return {
-      session_id: "local_sess_" + Date.now(),
+      session_id: "offline_sess_" + Date.now(),
       app_id: appId,
-      started_at: new Date().toISOString()
+      started_at: new Date().toISOString(),
+      is_offline: true,
+      remaining_minutes: isLocalPlus ? "Plus ∞" : totalRemaining.toFixed(1)
     };
   }
 
@@ -147,7 +168,42 @@ class PlatformAPI {
         return await res.json();
       }
     } catch (e) {}
-    return { ok: true };
+
+    // Офлайн-списание: каждые 30 секунд списываем 0.5 минуты
+    const isLocalPlus = localStorage.getItem("user_is_plus") === "true";
+    if (isLocalPlus) {
+      return { ok: true, minutes: { is_plus: true, remaining_minutes: "Plus ∞" } };
+    }
+
+    const todayKey = "free_min_date_" + new Date().toISOString().slice(0, 10);
+    let usedToday = parseFloat(localStorage.getItem(todayKey) || "0");
+    let extraMinutes = parseFloat(localStorage.getItem("user_extra_minutes") || "0");
+
+    if (usedToday < 10.0) {
+      usedToday = Math.min(10.0, usedToday + 0.5);
+      localStorage.setItem(todayKey, usedToday.toString());
+    } else if (extraMinutes > 0) {
+      extraMinutes = Math.max(0, extraMinutes - 0.5);
+      localStorage.setItem("user_extra_minutes", extraMinutes.toString());
+    }
+
+    const remFree = Math.max(0, 10.0 - usedToday);
+    const totalRemaining = remFree + extraMinutes;
+
+    if (totalRemaining <= 0.01) {
+      return {
+        error: "Ваше время игры подошло к концу. Перейдите в Магазин для продления.",
+        require_paywall: true
+      };
+    }
+
+    return {
+      ok: true,
+      minutes: {
+        is_plus: false,
+        remaining_minutes: totalRemaining.toFixed(1)
+      }
+    };
   }
 
   async endSession(sessionId) {
