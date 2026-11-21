@@ -1,28 +1,29 @@
-/* Единый UI-kit платформы «Мини игры» (Раздел 11 RULES.md) */
+/* Единый UI-kit платформы «Мини игры»: Cyber Arcade / Neon Dark Edition */
 :root {
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --bg-color: #0f172a;
-  --card-bg: #1e293b;
-  --card-border: #334155;
+  --bg-dark: #070a13;
+  --card-bg: rgba(18, 24, 38, 0.75);
+  --card-border: rgba(255, 255, 255, 0.08);
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
-  --primary: #38bdf8;
-  --primary-hover: #0284c7;
-  --accent: #f59e0b;
-  --success: #10b981;
-  --danger: #ef4444;
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --safe-bottom: env(safe-area-inset-bottom, 16px);
-}
+  
+  /* Cyber Neons */
+  --neon-cyan: #00f2fe;
+  --neon-purple: #9b51e0;
+  --neon-pink: #ff0080;
+  --neon-amber: #f59e0b;
+  --neon-green: #10b981;
+  --neon-red: #ef4444;
 
-/* Telegram theme adaptivity */
-body.tg-theme {
-  --bg-color: var(--tg-theme-bg-color, #0f172a);
-  --text-main: var(--tg-theme-text-color, #f8fafc);
-  --card-bg: var(--tg-theme-secondary-bg-color, #1e293b);
-  --primary: var(--tg-theme-button-color, #38bdf8);
+  /* Glows */
+  --glow-cyan: 0 0 16px rgba(0, 242, 254, 0.35);
+  --glow-purple: 0 0 16px rgba(155, 81, 224, 0.35);
+  --glow-card: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  
+  --radius-sm: 10px;
+  --radius-card: 18px;
+  --radius-dock: 32px;
+  --safe-bottom: env(safe-area-inset-bottom, 16px);
 }
 
 * {
@@ -35,24 +36,28 @@ body.tg-theme {
 
 body {
   font-family: var(--font-family);
-  background-color: var(--bg-color);
+  background-color: var(--bg-dark);
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(155, 81, 224, 0.08) 0%, transparent 40%);
+  background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
-  padding-bottom: calc(70px + var(--safe-bottom));
+  padding-bottom: calc(85px + var(--safe-bottom));
 }
 
-/* Header */
+/* 3.1 Cyber Header */
 .app-header {
-  padding: 16px;
+  padding: 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--card-border);
-  background-color: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(10px);
+  background: rgba(7, 10, 19, 0.75);
+  backdrop-filter: blur(14px);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -60,63 +65,92 @@ body {
 
 .brand-title {
   font-size: 1.15rem;
-  font-weight: 700;
+  font-weight: 800;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  background: linear-gradient(135deg, #ffffff 30%, var(--neon-cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.5px;
 }
 
+/* Плавающий виджет времени */
 .minutes-badge {
-  background: rgba(56, 189, 248, 0.15);
-  border: 1px solid var(--primary);
-  color: var(--primary);
-  padding: 6px 12px;
+  background: rgba(0, 242, 254, 0.08);
+  border: 1px solid var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
+  color: var(--neon-cyan);
+  padding: 6px 14px;
   border-radius: 20px;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* Tabs & Filters (2.5) */
+.minutes-badge:active {
+  transform: scale(0.94);
+}
+
+.minutes-badge.warning {
+  border-color: var(--neon-amber);
+  color: var(--neon-amber);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+  animation: pulse-warn 1.5s infinite;
+}
+
+@keyframes pulse-warn {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(0.97); }
+}
+
+/* Filters bar */
 .filters-bar {
   display: flex;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 14px 20px;
   overflow-x: auto;
   scrollbar-width: none;
 }
 .filters-bar::-webkit-scrollbar { display: none; }
 
 .filter-btn {
-  background: var(--card-bg);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--card-border);
   color: var(--text-muted);
-  padding: 6px 14px;
-  border-radius: 18px;
+  padding: 8px 16px;
+  border-radius: 20px;
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .filter-btn.active {
-  background: var(--primary);
-  color: #0f172a;
-  border-color: var(--primary);
-  font-weight: 600;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  color: #070a13;
+  border-color: transparent;
+  box-shadow: var(--glow-cyan);
+  font-weight: 800;
 }
 
-/* 2.1 Сетка плиток (2 колонки телефон, 3-4 десктоп) */
+/* 3.2 Cyber Cards Grid */
 .tiles-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  padding: 16px;
+  gap: 14px;
+  padding: 16px 20px;
 }
 
 @media (min-width: 640px) {
   .tiles-grid {
     grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
   }
 }
 @media (min-width: 1024px) {
@@ -128,66 +162,102 @@ body {
 .tile-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-md);
-  padding: 16px;
+  border-radius: var(--radius-card);
+  padding: 18px 16px;
   display: flex;
   flex-direction: column;
   position: relative;
   cursor: pointer;
-  transition: transform 0.15s, border-color 0.15s;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s, box-shadow 0.2s;
+  box-shadow: var(--glow-card);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+}
+
+.tile-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-card);
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.3), transparent 60%, rgba(155, 81, 224, 0.25));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .tile-card:active {
-  transform: scale(0.97);
+  transform: scale(0.96);
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
 }
 
 .tile-icon {
-  font-size: 2.2rem;
-  margin-bottom: 10px;
+  font-size: 2.3rem;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 4px 10px rgba(0, 242, 254, 0.25));
 }
 
 .tile-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #ffffff;
 }
 
 .tile-desc {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 .tile-badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 12px;
+  right: 12px;
   font-size: 0.65rem;
-  font-weight: 700;
-  padding: 3px 6px;
-  border-radius: 6px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 8px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.badge-new { background: #10b981; color: white; }
-.badge-plus { background: #f59e0b; color: #0f172a; }
-.badge-locked { background: #64748b; color: white; }
+.badge-new {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid var(--neon-green);
+  color: var(--neon-green);
+}
+.badge-plus {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid var(--neon-amber);
+  color: var(--neon-amber);
+}
+.badge-locked {
+  background: rgba(100, 116, 139, 0.2);
+  border: 1px solid #64748b;
+  color: #cbd5e1;
+}
 
-/* Bottom Nav (3.1) */
+/* 3.3 Парящая навигация (Floating Dock) */
 .bottom-nav {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: calc(56px + var(--safe-bottom));
-  padding-bottom: var(--safe-bottom);
-  background: rgba(30, 41, 59, 0.95);
-  backdrop-filter: blur(12px);
-  border-top: 1px solid var(--card-border);
+  bottom: calc(14px + var(--safe-bottom));
+  left: 20px;
+  right: 20px;
+  height: 60px;
+  background: rgba(18, 24, 38, 0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-dock);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), var(--glow-cyan);
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 100;
+  max-width: 440px;
+  margin: 0 auto;
 }
 
 .nav-item {
@@ -197,77 +267,67 @@ body {
   gap: 3px;
   color: var(--text-muted);
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   background: none;
   border: none;
-  width: 33.3%;
+  width: 45%;
+  transition: all 0.2s ease;
 }
 
 .nav-item.active {
-  color: var(--primary);
+  color: var(--neon-cyan);
+  transform: translateY(-2px);
+  filter: drop-shadow(0 2px 8px rgba(0, 242, 254, 0.5));
 }
 
 .nav-icon {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
 }
 
-/* Modals & Paywall (2.6) */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  padding: 16px;
-}
-
-.modal-overlay.open {
-  display: flex;
-}
-
-.modal-content {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  width: 100%;
-  max-width: 420px;
-  max-height: 85vh;
-  overflow-y: auto;
-}
-
+/* Кнопки и формы в кибер-стиле */
 .btn-primary {
-  background: var(--primary);
-  color: #0f172a;
-  font-weight: 700;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  color: #070a13;
+  font-weight: 800;
   border: none;
   border-radius: var(--radius-sm);
-  padding: 12px 20px;
+  padding: 13px 20px;
   width: 100%;
   cursor: pointer;
   margin-top: 12px;
   font-size: 0.95rem;
+  box-shadow: var(--glow-cyan);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+  filter: brightness(1.1);
 }
 
 .btn-secondary {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.04);
   color: var(--text-muted);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-sm);
-  padding: 10px 16px;
+  padding: 11px 18px;
   width: 100%;
   cursor: pointer;
   margin-top: 8px;
   font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
-/* Profile specific styles (3.2) */
+.btn-secondary:active {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-main);
+}
+
+/* Profile Hub (3.4) */
 .profile-box {
-  padding: 16px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -276,47 +336,81 @@ body {
 .user-card {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-md);
-  padding: 16px;
+  border-radius: var(--radius-card);
+  padding: 18px;
+  box-shadow: var(--glow-card);
+  backdrop-filter: blur(14px);
 }
 
 .user-avatar {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  color: #0f172a;
-  font-weight: 700;
+  font-size: 1.6rem;
+  color: #070a13;
+  font-weight: 800;
+  box-shadow: var(--glow-cyan);
 }
 
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .stat-card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-sm);
-  padding: 12px;
+  border-radius: var(--radius-card);
+  padding: 16px;
+  box-shadow: var(--glow-card);
+  backdrop-filter: blur(14px);
 }
 
 .stat-val {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--primary);
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--neon-cyan);
 }
 
 .stat-lbl {
   font-size: 0.75rem;
   color: var(--text-muted);
-  margin-top: 2px;
+  margin-top: 4px;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+}
+
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal-content {
+  background: #0f1626;
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), var(--glow-cyan);
+  border-radius: 22px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
 }
