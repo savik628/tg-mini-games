@@ -1,0 +1,218 @@
+{
+  ".agents/skills.json": {
+    "mtime": 1795230007.6564434,
+    "seen": 1795297128.716444,
+    "ast_hash": "47801ea6a678da43443a1ae0a658cee7",
+    "semantic_hash": ""
+  },
+  ".github/workflows/deploy.yml": {
+    "mtime": 1795230172.0906966,
+    "seen": 1795297128.716453,
+    "ast_hash": "7a5bd5529b4cc73a0901fbc36224708c",
+    "semantic_hash": ""
+  },
+  "bot/main.py": {
+    "mtime": 1795233032.4725528,
+    "seen": 1795297128.716459,
+    "ast_hash": "eacebdbbafda810bafdd1069124ca95b",
+    "semantic_hash": ""
+  },
+  "js/api.js": {
+    "mtime": 1795229565.218109,
+    "seen": 1795297128.716464,
+    "ast_hash": "e54cc25a6a2a53f0c59a17d233b1bc4e",
+    "semantic_hash": ""
+  },
+  "js/audio.js": {
+    "mtime": 1795230007.6629803,
+    "seen": 1795297128.7164679,
+    "ast_hash": "2fe5ecb0ab798146cf04615a20bbadd6",
+    "semantic_hash": ""
+  },
+  "js/games.js": {
+    "mtime": 1795230007.6633828,
+    "seen": 1795297128.7164721,
+    "ast_hash": "af8451fadd9d2a07d85f4f6f5518a3c6",
+    "semantic_hash": ""
+  },
+  "js/session.js": {
+    "mtime": 1795230007.663817,
+    "seen": 1795297128.716476,
+    "ast_hash": "65c8cd28bdcc4107031735c3f734b39e",
+    "semantic_hash": ""
+  },
+  "render.yaml": {
+    "mtime": 1795227380.9107344,
+    "seen": 1795297128.71648,
+    "ast_hash": "75453da579995a340f7ff1f1e669fdd8",
+    "semantic_hash": ""
+  },
+  "server/auth.py": {
+    "mtime": 1795227178.3694947,
+    "seen": 1795297128.716485,
+    "ast_hash": "6c864a20309691ada5440b03192a761a",
+    "semantic_hash": ""
+  },
+  "server/db.py": {
+    "mtime": 1795233075.3022587,
+    "seen": 1795297128.716489,
+    "ast_hash": "528c80947b9a9e15a576c8fb696654e8",
+    "semantic_hash": ""
+  },
+  "server/engine.py": {
+    "mtime": 1795230007.664751,
+    "seen": 1795297128.7164931,
+    "ast_hash": "b5796f0b755512eb66da664ed276043d",
+    "semantic_hash": ""
+  },
+  "server/main.py": {
+    "mtime": 1795233016.1743367,
+    "seen": 1795297128.716497,
+    "ast_hash": "61589bffb50c676145ff967c6cbed161",
+    "semantic_hash": ""
+  },
+  "tests/test_rules.py": {
+    "mtime": 1795230007.6651986,
+    "seen": 1795297128.716501,
+    "ast_hash": "cdcfb9a07c489ed473a96e76a9844540",
+    "semantic_hash": ""
+  },
+  "webapp/js/api.js": {
+    "mtime": 1795233056.1843843,
+    "seen": 1795297128.716505,
+    "ast_hash": "ccc0f57fd66a38fe49aef2e3348d0cd9",
+    "semantic_hash": ""
+  },
+  "webapp/js/audio.js": {
+    "mtime": 1795230007.666255,
+    "seen": 1795297128.7165089,
+    "ast_hash": "2fe5ecb0ab798146cf04615a20bbadd6",
+    "semantic_hash": ""
+  },
+  "webapp/js/games.js": {
+    "mtime": 1795230007.6665297,
+    "seen": 1795297128.716513,
+    "ast_hash": "af8451fadd9d2a07d85f4f6f5518a3c6",
+    "semantic_hash": ""
+  },
+  "webapp/js/games/base_game.js": {
+    "mtime": 1795233121.3866823,
+    "seen": 1795297128.7165172,
+    "ast_hash": "a07ea7100539b4085413ab927a6bf154",
+    "semantic_hash": ""
+  },
+  "webapp/js/games/reaction_games.js": {
+    "mtime": 1795233223.9821806,
+    "seen": 1795297128.716522,
+    "ast_hash": "a91238988465ca6535ad63618b3174d5",
+    "semantic_hash": ""
+  },
+  "webapp/js/session.js": {
+    "mtime": 1795230007.6668406,
+    "seen": 1795297128.716526,
+    "ast_hash": "65c8cd28bdcc4107031735c3f734b39e",
+    "semantic_hash": ""
+  },
+  ".agents/skills/tg-backend-engine/SKILL.md": {
+    "mtime": 1795230007.6572225,
+    "seen": 1795297128.7165298,
+    "ast_hash": "8097c21023061fa9ae5adadea6d01147",
+    "semantic_hash": ""
+  },
+  ".agents/skills/tg-game-builder/SKILL.md": {
+    "mtime": 1795230007.6578643,
+    "seen": 1795297128.716534,
+    "ast_hash": "b2cca694ba911d775fb3ed6aafe0f74e",
+    "semantic_hash": ""
+  },
+  ".agents/skills/tg-platform-rules/SKILL.md": {
+    "mtime": 1795230007.6585515,
+    "seen": 1795297128.716539,
+    "ast_hash": "8569ceae287cc55a059c64da9d70582b",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1795230007.6589851,
+    "seen": 1795297128.716543,
+    "ast_hash": "8956e0348306741f8e84652c10db986c",
+    "semantic_hash": ""
+  },
+  "GAME-TEMPLATE.md": {
+    "mtime": 1795230007.659513,
+    "seen": 1795297128.716547,
+    "ast_hash": "f3065992e64bb73fb7c8403acf993f18",
+    "semantic_hash": ""
+  },
+  "GAMES.md": {
+    "mtime": 1795231860.209757,
+    "seen": 1795297128.7165508,
+    "ast_hash": "68bcc06887e274e7f626bc8236f7355e",
+    "semantic_hash": ""
+  },
+  "RULES.md": {
+    "mtime": 1795230007.6605964,
+    "seen": 1795297128.716555,
+    "ast_hash": "b23b474903ba201058b2f19434141b6c",
+    "semantic_hash": ""
+  },
+  "UI-KIT.md": {
+    "mtime": 1795230007.661195,
+    "seen": 1795297128.7165592,
+    "ast_hash": "2dc6fad6f020f8b7f6ddc43cdf714739",
+    "semantic_hash": ""
+  },
+  "bot/requirements.txt": {
+    "mtime": 1795224536.2450726,
+    "seen": 1795297128.716563,
+    "ast_hash": "cfa00e4f2cd1da602e50216602501b5d",
+    "semantic_hash": ""
+  },
+  "docs/privacy.md": {
+    "mtime": 1795229565.2153585,
+    "seen": 1795297128.716567,
+    "ast_hash": "f4358432a193ac2296dad32324ac9c07",
+    "semantic_hash": ""
+  },
+  "docs/subscription.md": {
+    "mtime": 1795229565.21596,
+    "seen": 1795297128.7165709,
+    "ast_hash": "41c98d4d39e0cdc7f81e19732c675b24",
+    "semantic_hash": ""
+  },
+  "docs/terms.md": {
+    "mtime": 1795229565.216576,
+    "seen": 1795297128.716575,
+    "ast_hash": "ad82b169de4d6adfa6f92c33c37950dc",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1795230007.662566,
+    "seen": 1795297128.716579,
+    "ast_hash": "c323769d884ceb7a80a58760de3ec75e",
+    "semantic_hash": ""
+  },
+  "webapp/docs/privacy.md": {
+    "mtime": 1795227267.3376653,
+    "seen": 1795297128.716583,
+    "ast_hash": "f4358432a193ac2296dad32324ac9c07",
+    "semantic_hash": ""
+  },
+  "webapp/docs/subscription.md": {
+    "mtime": 1795227270.986121,
+    "seen": 1795297128.716587,
+    "ast_hash": "41c98d4d39e0cdc7f81e19732c675b24",
+    "semantic_hash": ""
+  },
+  "webapp/docs/terms.md": {
+    "mtime": 1795227263.5637465,
+    "seen": 1795297128.7165911,
+    "ast_hash": "ad82b169de4d6adfa6f92c33c37950dc",
+    "semantic_hash": ""
+  },
+  "webapp/index.html": {
+    "mtime": 1795232208.6528964,
+    "seen": 1795297128.716595,
+    "ast_hash": "858f4fd795c478e2e7241badc9e9d193",
+    "semantic_hash": ""
+  }
+}

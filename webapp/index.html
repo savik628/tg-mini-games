@@ -9,20 +9,21 @@
 </head>
 <body class="tg-theme">
 
-  <!-- Header -->
-  <header class="app-header">
-    <div class="brand-title">
-      <span>🎮</span>
-      <span>Мини игры</span>
+  <!-- Premium Sticky Header -->
+  <header>
+    <div class="brand-container">
+      <span class="brand-icon">🎮</span>
+      <span class="brand-title">Мини игры</span>
     </div>
-    <div id="minutesBadge" class="minutes-badge" onclick="showPaywall()">
-      ⏳ 10.0 мин
+    <div id="minutesBadge" class="minutes-pill" onclick="showPaywall()">
+      <span id="minutesText">⏳ 10.0 мин</span>
+      <span class="star-badge">⭐️ Plus</span>
     </div>
   </header>
 
   <!-- Main View: Каталог плиток игр (Раздел 2 RULES.md) -->
   <main id="viewCatalog" class="view-screen">
-    <div class="filters-bar">
+    <div class="filter-bar">
       <button class="filter-btn active" onclick="filterTiles('all')">Все</button>
       <button class="filter-btn" onclick="filterTiles('new')">Новые</button>
       <button class="filter-btn" onclick="filterTiles('plus')">Для подписчиков</button>
@@ -30,7 +31,7 @@
     </div>
 
     <!-- 2-колоночная сетка плиток (п. 2.1) -->
-    <div id="tilesGrid" class="tiles-grid"></div>
+    <div id="tilesGrid" class="catalog-grid"></div>
   </main>
 
   <!-- Profile View: Профиль пользователя (Раздел 3 RULES.md) -->
@@ -120,26 +121,33 @@
     </div>
   </main>
 
-  <!-- Game Player Screen: Полноценные Canvas игры -->
-  <main id="viewGame" class="view-screen" style="display: none; padding: 16px; text-align: center;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-      <button class="btn-secondary" style="width: auto; padding: 6px 14px;" onclick="exitGame()">← В каталог</button>
-      <div id="gameSessionTimer" style="font-size: 0.9rem; font-weight: 600; color: var(--primary);">Сессия активна</div>
+  <!-- Game Player Screen with In-Game HUD -->
+  <main id="viewGame">
+    <div class="game-hud">
+      <div class="hud-left">
+        <button class="hud-btn" onclick="openPauseModal()" title="Пауза">⏸</button>
+        <span id="activeGameTitle" style="font-size: 14px; font-weight: 700; color: #fff;">Игра</span>
+      </div>
+      <div class="hud-right">
+        <div id="gameHudMinutes" class="minutes-pill" style="padding: 4px 10px; font-size: 12px;" onclick="showPaywall()">
+          ⏳ <span id="hudMinutesVal">10.0</span> мин
+        </div>
+        <button class="hud-btn" onclick="window.snd.toggleMute()" id="hudSoundBtn" title="Звук">🔊</button>
+      </div>
     </div>
-    <div id="gameContainer" style="background: var(--card-bg); border-radius: var(--radius-md); padding: 20px; border: 1px solid var(--card-border);">
-      <h2 id="activeGameTitle" style="margin-bottom: 6px;">Название игры</h2>
-      <div id="gameCanvasWrapper" style="margin-top: 15px;"></div>
+    <div class="game-canvas-container">
+      <div id="gameCanvasWrapper" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;"></div>
     </div>
   </main>
 
-  <!-- Bottom Navigation Bar -->
-  <nav class="bottom-nav">
-    <button id="navCatalog" class="nav-item active" onclick="switchTab('catalog')">
-      <span class="nav-icon">🎮</span>
-      <span>Игры</span>
+  <!-- Floating Bottom Dock Nav -->
+  <nav class="bottom-dock">
+    <button id="navCatalog" class="dock-item active" onclick="switchTab('catalog')">
+      <span class="dock-icon">🎮</span>
+      <span>Каталог</span>
     </button>
-    <button id="navProfile" class="nav-item" onclick="switchTab('profile')">
-      <span class="nav-icon">👤</span>
+    <button id="navProfile" class="dock-item" onclick="switchTab('profile')">
+      <span class="dock-icon">👤</span>
       <span>Профиль</span>
     </button>
   </nav>
@@ -166,7 +174,13 @@
   <script src="./js/audio.js"></script>
   <script src="./js/api.js"></script>
   <script src="./js/session.js"></script>
-  <script src="./js/games.js"></script>
+  <script src="./js/games/base_game.js"></script>
+  <script src="./js/games/reaction_games.js"></script>
+  <script src="./js/games/memory_games.js"></script>
+  <script src="./js/games/puzzle_games.js"></script>
+  <script src="./js/games/arcade_games.js"></script>
+  <script src="./js/games/plus_games.js"></script>
+  <script src="./js/games/registry.js"></script>
   <script>
     let currentApps = [];
     let currentProfile = null;
@@ -214,20 +228,26 @@
 
       apps.forEach(app => {
         const card = document.createElement("div");
-        card.className = "tile-card";
+        card.className = "game-card";
         card.onclick = () => onTileClick(app);
 
         let badgeHtml = "";
         if (app.badge) {
-          const badgeClass = app.badge === "NEW" ? "badge-new" : (app.badge === "PLUS" ? "badge-plus" : "badge-locked");
-          badgeHtml = `<span class="tile-badge ${badgeClass}">${app.badge}</span>`;
+          const badgeClass = app.badge === "NEW" ? "badge-new" : "badge-plus";
+          badgeHtml = `<span class="card-badge ${badgeClass}">${app.badge}</span>`;
         }
 
         card.innerHTML = `
-          ${badgeHtml}
-          <div class="tile-icon">${app.icon}</div>
-          <div class="tile-title">${app.title}</div>
-          <div class="tile-desc">${app.description}</div>
+          <div class="card-top">
+            <div class="card-icon">${app.icon}</div>
+            ${badgeHtml}
+          </div>
+          <div class="card-title">${app.title}</div>
+          <div class="card-desc">${app.description}</div>
+          <div class="card-footer">
+            <span>⚡️ 1 раунд ~ 1 мин</span>
+            <span class="play-action">Играть ›</span>
+          </div>
         `;
         container.appendChild(card);
       });
@@ -244,7 +264,49 @@
       else if (category === "favorites") renderTiles(currentApps.slice(0, 2));
     }
 
+
+    let activeApp = null;
+
+    function openPauseModal() {
+      if (window.snd) window.snd.playClick();
+      window.sessionMgr.pauseHeartbeat();
+      if (activeGameObject && activeGameObject.pause) activeGameObject.pause();
+      document.getElementById("pauseModal").classList.add("open");
+    }
+
+    function resumeGame() {
+      if (window.snd) window.snd.playClick();
+      document.getElementById("pauseModal").classList.remove("open");
+      window.sessionMgr.resumeHeartbeat();
+      if (activeGameObject && activeGameObject.resume) activeGameObject.resume();
+    }
+
+    function confirmExitToCatalog() {
+      document.getElementById("pauseModal").classList.remove("open");
+      exitGame();
+    }
+
+    function showResultsOverlay(score, bestScore, coins) {
+      document.getElementById("resultsTitle").textContent = "Раунд завершён!";
+      document.getElementById("resultsScoreInfo").innerHTML = `
+        <div style="font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 6px;">Счёт: ${score}</div>
+        <div style="font-size: 13px; color: var(--text-muted);">Рекорд: ${bestScore || score}</div>
+      `;
+      document.getElementById("resultsModal").classList.add("open");
+    }
+
+    function restartCurrentGame() {
+      document.getElementById("resultsModal").classList.remove("open");
+      if (activeApp) onTileClick(activeApp);
+    }
+
+    function exitFromResults() {
+      document.getElementById("resultsModal").classList.remove("open");
+      exitGame();
+    }
+
     async function onTileClick(app) {
+      activeApp = app;
       window.snd.playClick();
       const ok = await window.sessionMgr.start(app.app_id, (err) => {
         showPaywall(err);
@@ -256,24 +318,25 @@
         document.getElementById("viewProfile").style.display = "none";
         document.getElementById("viewGame").style.display = "block";
         document.getElementById("activeGameTitle").textContent = `${app.icon} ${app.title}`;
+
+        if (window.Telegram?.WebApp?.BackButton) {
+          window.Telegram.WebApp.BackButton.show();
+          window.Telegram.WebApp.BackButton.onClick(openPauseModal);
+        }
         
         const wrapper = document.getElementById("gameCanvasWrapper");
         if (activeGameObject) activeGameObject.destroy();
 
-        if (app.app_id === "matrix_grid") {
-          activeGameObject = new window.MatrixGridGame(wrapper);
-        } else if (app.app_id === "stroop_focus") {
-          activeGameObject = new window.StroopFocusGame(wrapper);
-        } else if (app.app_id === "reaction_tap") {
-          activeGameObject = new window.SpeedReactionGame(wrapper);
-        } else {
-          wrapper.innerHTML = `<div style="padding: 20px;">Игра в разработке</div>`;
-        }
+        activeGameObject = window.GameRegistry.create(app.app_id, wrapper);
       }
     }
 
     async function exitGame() {
       window.snd.playClick();
+      if (window.Telegram?.WebApp?.BackButton) {
+        window.Telegram.WebApp.BackButton.hide();
+        window.Telegram.WebApp.BackButton.offClick(openPauseModal);
+      }
       if (activeGameObject) {
         activeGameObject.destroy();
         activeGameObject = null;
@@ -287,18 +350,39 @@
     function updateMinutesDisplay(minutes) {
       if (!minutes) return;
       const val = minutes.is_plus ? "Plus ∞" : `${minutes.remaining_minutes} мин`;
-      document.getElementById("minutesBadge").textContent = `⏳ ${val}`;
-      document.getElementById("statRemainingMin").textContent = val;
+      
+      const badge = document.getElementById("minutesBadge");
+      const textElem = document.getElementById("minutesText");
+      if (textElem) textElem.textContent = `⏳ ${val}`;
+      else if (badge) badge.textContent = `⏳ ${val}`;
+
+      const hudMin = document.getElementById("hudMinutesVal");
+      if (hudMin) hudMin.textContent = val;
+
+      const hudPill = document.getElementById("gameHudMinutes");
+      if (!minutes.is_plus && minutes.remaining_minutes <= 1.0) {
+        if (badge) badge.classList.add("pulse");
+        if (hudPill) hudPill.classList.add("pulse");
+      } else {
+        if (badge) badge.classList.remove("pulse");
+        if (hudPill) hudPill.classList.remove("pulse");
+      }
+
+      const statRemaining = document.getElementById("statRemainingMin");
+      if (statRemaining) statRemaining.textContent = val;
 
       if (minutes.breakdown) {
-        document.getElementById("minutesBreakdown").innerHTML = `
-          • Free база: ${minutes.breakdown.free_minutes} мин<br>
-          • Серия дней: +${minutes.breakdown.streak_minutes || 0} мин<br>
-          • Рефералы: +${minutes.breakdown.referral_minutes} мин<br>
-          • Реклама: +${minutes.breakdown.ad_minutes} мин (макс 10)<br>
-          • Пакеты: +${minutes.breakdown.pack_minutes} мин<br>
-          • Дневной потолок: ${minutes.breakdown.daily_cap_minutes} мин
-        `;
+        const breakdownElem = document.getElementById("minutesBreakdown");
+        if (breakdownElem) {
+          breakdownElem.innerHTML = `
+            • Free база: ${minutes.breakdown.free_minutes} мин<br>
+            • Серия дней: +${minutes.breakdown.streak_minutes || 0} мин<br>
+            • Рефералы: +${minutes.breakdown.referral_minutes} мин<br>
+            • Реклама: +${minutes.breakdown.ad_minutes} мин (макс 10)<br>
+            • Пакеты: +${minutes.breakdown.pack_minutes} мин<br>
+            • Дневной потолок: ${minutes.breakdown.daily_cap_minutes} мин
+          `;
+        }
       }
     }
 
@@ -372,5 +456,28 @@
 
     window.onload = initPlatform;
   </script>
+
+  <!-- Pause Modal Overlay -->
+  <div id="pauseModal" class="modal-overlay">
+    <div class="modal-sheet">
+      <div style="font-size: 36px; margin-bottom: 8px;">⏸</div>
+      <h3 class="modal-title">Игра на паузе</h3>
+      <p class="modal-desc">Минуты не расходуются, пока игра находится на паузе.</p>
+      <button class="btn-primary" onclick="resumeGame()">▶️ Продолжить</button>
+      <button class="btn-secondary" onclick="confirmExitToCatalog()">🚪 Выйти в каталог</button>
+    </div>
+  </div>
+
+  <!-- Unified Results Overlay -->
+  <div id="resultsModal" class="modal-overlay">
+    <div class="modal-sheet">
+      <div style="font-size: 40px; margin-bottom: 8px;">🏆</div>
+      <h3 class="modal-title" id="resultsTitle">Игра завершена!</h3>
+      <p class="modal-desc" id="resultsScoreInfo">Счёт: 0</p>
+      <button class="btn-primary" onclick="restartCurrentGame()">🔄 Сыграть снова</button>
+      <button class="btn-secondary" onclick="exitFromResults()">🎮 В каталог</button>
+    </div>
+  </div>
+
 </body>
 </html>

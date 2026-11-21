@@ -106,7 +106,26 @@ class PlatformAPI {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ product: productKey })
     });
-    return res.json();
+    const data = await res.json();
+
+    // Если Telegram WebApp поддерживает нативную оплату инвойсов и сервер вернул invoice_link
+    if (data.invoice_link && window.Telegram?.WebApp?.openInvoice) {
+      return new Promise((resolve) => {
+        window.Telegram.WebApp.openInvoice(data.invoice_link, (status) => {
+          if (status === "paid") {
+            resolve({ status: "ok", message: `Оплата ${data.stars} Stars успешно завершена!` });
+          } else if (status === "cancelled") {
+            resolve({ status: "cancelled", message: "Оплата отменена." });
+          } else if (status === "failed") {
+            resolve({ status: "error", message: "Ошибка при проведении платежа Stars." });
+          } else {
+            resolve({ status: status, message: `Статус оплаты: ${status}` });
+          }
+        });
+      });
+    }
+
+    return data;
   }
 
   async requestOfflineToken() {
